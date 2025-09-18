@@ -33,6 +33,20 @@ mod web;
 ///       title VARCHAR NOT NULL
 ///     );'
 ///   ```
+///
+/// - POST a book:
+///
+///   ```console
+///   curl http://127.0.0.1:8080/api/books/v1 --json '{"id":"00000000-0000-0000-0000-000000000000","title":"Foo Bar!"}'
+///   ```
+///
+/// - GET books:
+///
+///   ```console
+///   curl http://127.0.0.1:8080/api/books/v1
+///   [{"id":"00000000-0000-0000-0000-000000000000","title":"Foo Bar!"},{"id":"10000000-0000-0000-0000-000000000000","title":"Foo Bar!"}]⏎
+///   ```
+
 fn main() -> std::process::ExitCode {
     if let Err(code) = logg::initialize_logger(log::LevelFilter::Trace) {
         return code;
