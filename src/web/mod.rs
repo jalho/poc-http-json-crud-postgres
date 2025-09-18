@@ -1,12 +1,14 @@
 mod handlers;
 
 struct State {
-    db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
+    db_client_shared: tokio::sync::Mutex<tokio::sync::mpsc::Sender<crate::db::Query>>,
 }
 
 impl State {
-    pub fn init(db_client: tokio::sync::mpsc::Sender<crate::db::Query>) -> std::sync::Arc<Self> {
-        std::sync::Arc::new(Self { db_client })
+    pub fn init(db_client_shared: tokio::sync::mpsc::Sender<crate::db::Query>) -> std::sync::Arc<Self> {
+        std::sync::Arc::new(Self {
+            db_client_shared: tokio::sync::Mutex::new(db_client_shared),
+        })
     }
 }
 
