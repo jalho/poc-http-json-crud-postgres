@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 axum       = { version = "=0.8.4",   default-features = false, features = [ "tokio", "http1", "json" ] }
 diesel     = { version = "=2.3.1",   default-features = false, features = [ "postgres", "uuid" ] }
+log4rs     = { version = "=1.4.0",   default-features = false, features = [ "console_appender" ] }
+log        = { version = "=0.4.28",  default-features = false, features = [ ] }
 pq-sys     = { version = "=0.7.2",   default-features = false, features = [ "bundled" ] }
 serde_json = { version = "=1.0.145", default-features = false, features = [ "alloc" ] }
 serde      = { version = "=1.0.225", default-features = false, features = [ "serde_derive" ] }

@@ -15,6 +15,7 @@ impl Actor {
     pub fn connect(term: crate::term::Handle, connection_string: &str) -> Result<Self, diesel::ConnectionError> {
         use diesel::Connection;
         let db_connection: diesel::PgConnection = diesel::pg::PgConnection::establish(connection_string)?;
+        log::info!("Connected to database");
 
         let (tx_query, rx_query) = tokio::sync::mpsc::channel::<Query>(1);
 
@@ -62,7 +63,7 @@ impl Actor {
                     let query = books.select(selection);
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
-                    println!("{query_dbg}");
+                    log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
                     let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(db_connection);
@@ -82,13 +83,13 @@ impl Actor {
                     let query = books.filter(schema::books::id.eq(book_id)).select(selection);
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
-                    println!("{query_dbg}");
+                    log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
                     let db_query_result: Result<schema::Book, diesel::result::Error> = query.get_result(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
-                        eprintln!("failed to respond from DB client");
+                        log::error!("Failed to respond from DB client");
                     }
                 }
             }

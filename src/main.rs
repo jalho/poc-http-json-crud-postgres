@@ -1,4 +1,5 @@
 mod db;
+mod logg;
 mod term;
 mod web;
 
@@ -33,6 +34,10 @@ mod web;
 ///     );'
 ///   ```
 fn main() -> std::process::ExitCode {
+    if let Err(code) = logg::initialize_logger(log::LevelFilter::Trace) {
+        return code;
+    }
+
     let terminator: term::Actor = term::Actor::hook();
 
     let db_client: db::Actor = match db::Actor::connect(
@@ -41,8 +46,8 @@ fn main() -> std::process::ExitCode {
     ) {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
-            return std::process::ExitCode::from(42);
+            log::error!("{err}");
+            return std::process::ExitCode::from(44);
         }
     };
 
@@ -51,8 +56,8 @@ fn main() -> std::process::ExitCode {
     let runtime: tokio::runtime::Runtime = match tokio::runtime::Builder::new_current_thread().enable_io().build() {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
-            return std::process::ExitCode::from(43);
+            log::error!("{err}");
+            return std::process::ExitCode::from(45);
         }
     };
 

@@ -29,16 +29,16 @@ impl Actor {
 
         tokio::select! {
             _ = sigint.recv() => {
-                eprintln!("SIGINT");
+                log::info!("SIGINT");
             }
             _ = sigterm.recv() => {
-                eprintln!("SIGTERM");
+                log::info!("SIGTERM");
             }
             received = self.chan_trigger.1.recv() => {
                 if let Some(_triggerer) = received {
-                    eprintln!("Cancellation triggered by another actor");
+                    log::info!("Cancellation triggered another actor");
                 } else {
-                    eprintln!("Trigger channel closed without signal");
+                    log::error!("Cancellation trigger channel closed without signal");
                 }
             }
         }
@@ -58,7 +58,7 @@ pub struct Handle {
 impl Handle {
     pub async fn trigger_termination(&self, triggerer: TriggerGlobalCancellation) {
         if let Err(err) = self.write.send(triggerer).await {
-            eprintln!("{err}");
+            log::error!("{err}");
         }
     }
 
