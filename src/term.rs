@@ -34,8 +34,8 @@ pub struct Handle {
 }
 
 impl Handle {
-    pub async fn trigger_termination(&self) {
-        if let Err(err) = self.write.send(TriggerGlobalCancellation).await {
+    pub async fn trigger_termination(&self, triggerer: TriggerGlobalCancellation) {
+        if let Err(err) = self.write.send(triggerer).await {
             eprintln!("{err}");
         }
     }
@@ -45,4 +45,6 @@ impl Handle {
     }
 }
 
-pub struct TriggerGlobalCancellation;
+pub enum TriggerGlobalCancellation {
+    WebServer,
+}

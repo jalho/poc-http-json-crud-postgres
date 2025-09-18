@@ -29,7 +29,9 @@ impl Actor {
             Ok(n) => n,
             Err(err) => {
                 eprintln!("{err}");
-                self.term.trigger_termination().await;
+                self.term
+                    .trigger_termination(crate::term::TriggerGlobalCancellation::WebServer)
+                    .await;
                 return Summary;
             }
         };
