@@ -1,6 +1,6 @@
 diesel::table! {
     books (id) {
-        id -> Int4,
+        id -> Uuid,
         title -> Varchar,
     }
 }
@@ -8,6 +8,6 @@ diesel::table! {
 #[derive(serde::Serialize, diesel::Queryable, diesel::Identifiable, diesel::Selectable, Debug, PartialEq, Clone)]
 #[diesel(table_name = books)]
 pub struct Book {
-    pub id: i32,
+    pub id: uuid::Uuid,
     pub title: String,
 }

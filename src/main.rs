@@ -28,7 +28,7 @@ mod web;
 ///   ```console
 ///   podman exec -it poc-postgres psql -U postgres -d postgres -c '
 ///     CREATE TABLE books (
-///       id    SERIAL PRIMARY KEY,
+///       id    UUID PRIMARY KEY,
 ///       title VARCHAR NOT NULL
 ///     );'
 ///   ```

@@ -5,9 +5,10 @@ edition = "2024"
 
 [dependencies]
 axum       = { version = "=0.8.4",   default-features = false, features = [ "tokio", "http1", "json" ] }
-diesel     = { version = "=2.3.1",   default-features = false, features = [ "postgres" ] }
+diesel     = { version = "=2.3.1",   default-features = false, features = [ "postgres", "uuid" ] }
 pq-sys     = { version = "=0.7.2",   default-features = false, features = [ "bundled" ] }
 serde_json = { version = "=1.0.145", default-features = false, features = [ "alloc" ] }
 serde      = { version = "=1.0.225", default-features = false, features = [ "serde_derive" ] }
 tokio-util = { version = "=0.7.16",  default-features = false, features = [ ] }
 tokio      = { version = "=1.47.1",  default-features = false, features = [ "rt", "macros", "net", "signal" ] }
+uuid       = { version = "=1.18.1",  default-features = false, features = [ "v4", "serde" ] }
