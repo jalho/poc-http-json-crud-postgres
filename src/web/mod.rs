@@ -1,5 +1,15 @@
 mod handlers;
 
+struct State {
+    db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
+}
+
+impl State {
+    pub fn init(db_client: tokio::sync::mpsc::Sender<crate::db::Query>) -> std::sync::Arc<Self> {
+        std::sync::Arc::new(Self { db_client })
+    }
+}
+
 pub struct Actor {
     term: crate::term::Handle,
 
@@ -13,8 +23,11 @@ impl Actor {
         listen_address: &str,
         db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
     ) -> Self {
-        let router: axum::Router =
-            axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
+        let state: std::sync::Arc<State> = State::init(db_client);
+
+        let router: axum::Router = axum::Router::new()
+            .route("/", axum::routing::get(handlers::get_foos::handle_request))
+            .with_state(state);
 
         Self {
             term,
