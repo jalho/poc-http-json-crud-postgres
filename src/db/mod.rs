@@ -2,10 +2,6 @@ pub mod schema;
 
 use crate::db::schema::books::dsl::books;
 
-use diesel::{
-    RunQueryDsl,
-};
-
 pub struct Actor {
     term: crate::term::Handle,
 
@@ -46,11 +42,11 @@ impl Actor {
     }
 
     async fn handle_queries(
-        connection: &mut diesel::PgConnection,
-        receiver: &mut tokio::sync::mpsc::Receiver<Query>,
+        db_connection: &mut diesel::PgConnection,
+        query_recv: &mut tokio::sync::mpsc::Receiver<Query>,
     ) -> () {
         {
-            let query_received: Query = match receiver.recv().await {
+            let query_received: Query = match query_recv.recv().await {
                 Some(n) => n,
                 None => {
                     return ();
@@ -68,7 +64,8 @@ impl Actor {
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     println!("{query_dbg}");
 
-                    let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(connection);
+                    use diesel::RunQueryDsl;
+                    let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(db_connection);
 
                     if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
                         eprintln!("failed to respond from DB client");
