@@ -71,6 +71,26 @@ impl Actor {
                         eprintln!("failed to respond from DB client");
                     }
                 }
+
+                Query::SelectOneBookById { respond_to, book_id } => {
+                    use diesel::SelectableHelper;
+                    let selection = schema::Book::as_select();
+
+                    use diesel::ExpressionMethods;
+                    use diesel::query_dsl::methods::FilterDsl;
+                    use diesel::query_dsl::methods::SelectDsl;
+                    let query = books.filter(schema::books::id.eq(book_id)).select(selection);
+
+                    let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
+                    println!("{query_dbg}");
+
+                    use diesel::RunQueryDsl;
+                    let db_query_result: Result<schema::Book, diesel::result::Error> = query.get_result(db_connection);
+
+                    if let Err(_err) = respond_to.send(db_query_result) {
+                        eprintln!("failed to respond from DB client");
+                    }
+                }
             }
         }
     }
@@ -82,12 +102,8 @@ pub enum Query {
     SelectManyBooks {
         respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
     },
-}
-
-impl Query {
-    pub fn select_many_books(
-        respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
-    ) -> Self {
-        Self::SelectManyBooks { respond_to }
-    }
+    SelectOneBookById {
+        respond_to: tokio::sync::oneshot::Sender<Result<schema::Book, diesel::result::Error>>,
+        book_id: uuid::Uuid,
+    },
 }
