@@ -50,4 +50,10 @@ pub struct Query {
     respond_to: tokio::sync::oneshot::Sender<Response>,
 }
 
+impl Query {
+    pub fn new(respond_to: tokio::sync::oneshot::Sender<Response>) -> Self {
+        Self { respond_to }
+    }
+}
+
 pub struct Response;
