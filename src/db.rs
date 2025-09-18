@@ -1,5 +1,19 @@
 use diesel::Connection;
 
+diesel::table! {
+    books (id) {
+        id -> Int4,
+        title -> Varchar,
+    }
+}
+
+#[derive(diesel::Queryable, diesel::Identifiable, diesel::Selectable, Debug, PartialEq, Clone)]
+#[diesel(table_name = books)]
+pub struct Book {
+    pub id: i32,
+    pub title: String,
+}
+
 pub struct Actor {
     term: crate::term::Handle,
 
@@ -32,6 +46,12 @@ impl Actor {
                         break 'recv;
                     }
                 };
+
+                /*
+                 * TODO: Using the already established PostgreSQL connection, do SELECT all `Book`s.
+                 */
+                let connection: diesel::PgConnection = self.connection;
+
                 todo!(
                     "handle query: do something with DB connection in self, and then write response back to the response sender contained in the Query"
                 );
