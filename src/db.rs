@@ -1,4 +1,4 @@
-use diesel::Connection;
+use diesel::{Connection, SelectableHelper};
 
 diesel::table! {
     books (id) {
@@ -50,11 +50,15 @@ impl Actor {
                 /*
                  * TODO: Using the already established PostgreSQL connection, do SELECT all `Book`s.
                  */
-                let connection: diesel::PgConnection = self.connection;
-
-                todo!(
-                    "handle query: do something with DB connection in self, and then write response back to the response sender contained in the Query"
-                );
+                use crate::db::books::dsl::books;
+                use diesel::RunQueryDsl;
+                use diesel::query_dsl::methods::SelectDsl;
+                let result: Result<Vec<Book>, diesel::result::Error> =
+                    books.select(Book::as_select()).load(&mut self.connection);
+                let response: Response = Response::new(result);
+                if let Err(_err) = received.respond_to.send(response) {
+                    eprintln!("failed to respond from DB client");
+                }
             }
         };
 
@@ -76,4 +80,10 @@ impl Query {
     }
 }
 
-pub struct Response;
+pub struct Response(pub Result<Vec<Book>, diesel::result::Error>);
+
+impl Response {
+    pub fn new(result: Result<Vec<Book>, diesel::result::Error>) -> Self {
+        Self(result)
+    }
+}

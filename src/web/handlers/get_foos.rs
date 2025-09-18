@@ -14,7 +14,15 @@ pub async fn handle_request(
         };
     }
 
-    let db_response: crate::db::Response = match db_rx.await {
+    let db_response = match db_rx.await {
+        Ok(n) => n.0,
+        Err(err) => {
+            eprintln!("{err}");
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let query_response: Vec<crate::db::Book> = match db_response {
         Ok(n) => n,
         Err(err) => {
             eprintln!("{err}");
