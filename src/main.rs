@@ -5,8 +5,11 @@ mod web;
 /// Proof-of-concept implementation demonstrating:
 ///
 /// - HTTP JSON API with ergonomics of _serde_ ecosystem and _axum_
+///
 /// - CRUD operations on PostgreSQL with ergonomics of _diesel_
-/// - Using _actor pattern_ in _tokio_ ecosystem
+///
+/// - Using _actor pattern_ in _tokio_ ecosystem (inspired by Alice Ryhl:
+///   _Actors with Tokio_, RustLab Conference 2022)
 ///
 /// ### Cheatsheet
 ///
