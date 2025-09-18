@@ -28,7 +28,7 @@ impl Actor {
         let state: std::sync::Arc<State> = State::init(db_client);
 
         let router: axum::Router = axum::Router::new()
-            .route("/", axum::routing::get(handlers::get_foos::handle_request))
+            .route("/api/books/v1", axum::routing::get(handlers::books_v1::get_many))
             .with_state(state);
 
         Self {

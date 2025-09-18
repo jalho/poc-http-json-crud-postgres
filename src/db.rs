@@ -39,25 +39,27 @@ impl Actor {
 
     pub async fn work(mut self) -> Summary {
         let job = async {
-            'recv: loop {
-                let received: Query = match self.chan_query.1.recv().await {
+            'recv_queries: loop {
+                let query_received: Query = match self.chan_query.1.recv().await {
                     Some(n) => n,
                     None => {
-                        break 'recv;
+                        break 'recv_queries;
                     }
                 };
 
-                /*
-                 * TODO: Using the already established PostgreSQL connection, do SELECT all `Book`s.
-                 */
                 use crate::db::books::dsl::books;
                 use diesel::RunQueryDsl;
                 use diesel::query_dsl::methods::SelectDsl;
-                let result: Result<Vec<Book>, diesel::result::Error> =
-                    books.select(Book::as_select()).load(&mut self.connection);
-                let response: Response = Response::new(result);
-                if let Err(_err) = received.respond_to.send(response) {
-                    eprintln!("failed to respond from DB client");
+
+                match query_received {
+                    Query::SelectManyBooks { respond_to } => {
+                        let db_query_result: Result<Vec<Book>, diesel::result::Error> =
+                            books.select(Book::as_select()).load(&mut self.connection);
+
+                        if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
+                            eprintln!("failed to respond from DB client");
+                        }
+                    }
                 }
             }
         };
@@ -70,13 +72,15 @@ impl Actor {
 
 pub struct Summary;
 
-pub struct Query {
-    respond_to: tokio::sync::oneshot::Sender<Response>,
+pub enum Query {
+    SelectManyBooks {
+        respond_to: tokio::sync::oneshot::Sender<Response>,
+    },
 }
 
 impl Query {
-    pub fn new(respond_to: tokio::sync::oneshot::Sender<Response>) -> Self {
-        Self { respond_to }
+    pub fn select_many_books(respond_to: tokio::sync::oneshot::Sender<Response>) -> Self {
+        Self::SelectManyBooks { respond_to }
     }
 }
 

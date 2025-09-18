@@ -1,1 +1,1 @@
-pub mod get_foos;
+pub mod books_v1;
