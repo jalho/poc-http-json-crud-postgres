@@ -25,16 +25,18 @@ mod web;
 fn main() -> std::process::ExitCode {
     let terminator: term::Actor = term::Actor::hook();
 
-    let db_client: db::Actor =
-        match db::Actor::connect("postgres://postgres:postgres@127.0.0.1:5432/postgres?connect_timeout=1") {
-            Ok(n) => n,
-            Err(err) => {
-                eprintln!("{err}");
-                return std::process::ExitCode::from(42);
-            }
-        };
+    let db_client: db::Actor = match db::Actor::connect(
+        terminator.get_handle(),
+        "postgres://postgres:postgres@127.0.0.1:5432/postgres?connect_timeout=1",
+    ) {
+        Ok(n) => n,
+        Err(err) => {
+            eprintln!("{err}");
+            return std::process::ExitCode::from(42);
+        }
+    };
 
-    let web_server: web::Actor = web::Actor::init("127.0.0.1:8080", db_client.get_handle());
+    let web_server: web::Actor = web::Actor::init(terminator.get_handle(), "127.0.0.1:8080", db_client.get_handle());
 
     let runtime: tokio::runtime::Runtime = match tokio::runtime::Builder::new_current_thread().enable_io().build() {
         Ok(n) => n,

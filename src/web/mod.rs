@@ -1,15 +1,24 @@
 mod handlers;
 
 pub struct Actor {
+    term: crate::term::Handle,
+
     listen_address: String,
     router: axum::Router,
 }
 
 impl Actor {
-    pub fn init(listen_address: &str, db_client: tokio::sync::mpsc::Sender<crate::db::Query>) -> Self {
+    pub fn init(
+        term: crate::term::Handle,
+        listen_address: &str,
+        db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
+    ) -> Self {
         let router: axum::Router =
             axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
+
         Self {
+            term,
+
             router,
             listen_address: listen_address.to_owned(),
         }

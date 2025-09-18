@@ -10,3 +10,4 @@ pq-sys     = { version = "=0.7.2",   default-features = false, features = [ "bun
 # serde      = { version = "=1.0.225", default-features = false, features = [ ] }
 # serde_json = { version = "=1.0.145", default-features = false, features = [ ] }
 tokio      = { version = "=1.47.1",  default-features = false, features = [ "rt", "macros", "net" ] }
+tokio-util = { version = "=0.7.16",  default-features = false, features = [ ] }
