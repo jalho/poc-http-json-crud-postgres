@@ -67,7 +67,7 @@ impl Actor {
                     use diesel::RunQueryDsl;
                     let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(db_connection);
 
-                    if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
+                    if let Err(_err) = respond_to.send(db_query_result) {
                         eprintln!("failed to respond from DB client");
                     }
                 }
@@ -80,20 +80,14 @@ pub struct Summary;
 
 pub enum Query {
     SelectManyBooks {
-        respond_to: tokio::sync::oneshot::Sender<Response>,
+        respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
     },
 }
 
 impl Query {
-    pub fn select_many_books(respond_to: tokio::sync::oneshot::Sender<Response>) -> Self {
+    pub fn select_many_books(
+        respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
+    ) -> Self {
         Self::SelectManyBooks { respond_to }
-    }
-}
-
-pub struct Response(pub Result<Vec<schema::Book>, diesel::result::Error>);
-
-impl Response {
-    pub fn new(result: Result<Vec<schema::Book>, diesel::result::Error>) -> Self {
-        Self(result)
     }
 }

@@ -15,7 +15,7 @@ pub async fn get_many(
     }
 
     let db_response = match db_rx.await {
-        Ok(n) => n.0,
+        Ok(n) => n,
         Err(err) => {
             eprintln!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
