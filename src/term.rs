@@ -21,8 +21,30 @@ impl Actor {
         }
     }
 
-    pub async fn work(self) -> Summary {
-        todo!("hook SIGINT and SIGTERM, and chan_trigger.rx to self.global_cancellation_token");
+    pub async fn work(mut self) -> Summary {
+        let mut sigint = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
+            .expect("failed to hook into SIGINT");
+        let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to hook into SIGTERM");
+
+        tokio::select! {
+            _ = sigint.recv() => {
+                eprintln!("SIGINT");
+            }
+            _ = sigterm.recv() => {
+                eprintln!("SIGTERM");
+            }
+            received = self.chan_trigger.1.recv() => {
+                if let Some(_triggerer) = received {
+                    eprintln!("Cancellation triggered by another actor");
+                } else {
+                    eprintln!("Trigger channel closed without signal");
+                }
+            }
+        }
+        self.global_cancellation_token.cancel();
+
+        Summary
     }
 }
 
