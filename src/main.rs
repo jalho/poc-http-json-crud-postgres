@@ -22,6 +22,16 @@ mod web;
 ///     -p 127.0.0.1:5432:5432/tcp \
 ///     docker.io/library/postgres:17.6-trixie@sha256:feff5b24fedd610975a1f5e743c51a4b360437f4dc3a11acf740dcd708f413f6
 ///   ```
+///
+/// - Creating a table named `books` in the containerized PostgreSQL instance:
+///
+///   ```console
+///   podman exec -it poc-postgres psql -U postgres -d postgres -c '
+///     CREATE TABLE books (
+///       id    SERIAL PRIMARY KEY,
+///       title VARCHAR NOT NULL
+///     );'
+///   ```
 fn main() -> std::process::ExitCode {
     let terminator: term::Actor = term::Actor::hook();
 
