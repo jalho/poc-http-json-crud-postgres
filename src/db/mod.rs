@@ -1,9 +1,9 @@
 pub mod schema;
 
 use crate::db::schema::books::dsl::books;
-use diesel::RunQueryDsl;
 use diesel::query_dsl::methods::SelectDsl;
 use diesel::{Connection, SelectableHelper};
+use diesel::{RunQueryDsl, debug_query};
 
 pub struct Actor {
     term: crate::term::Handle,
@@ -59,8 +59,11 @@ impl Actor {
                 Query::SelectManyBooks { respond_to } => {
                     let selection = schema::Book::as_select();
 
-                    let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> =
-                        books.select(selection).load(connection);
+                    let query = books.select(selection);
+                    let query_dbg: String = debug_query::<diesel::pg::Pg, _>(&query).to_string();
+                    println!("{query_dbg}");
+
+                    let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(connection);
 
                     if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
                         eprintln!("failed to respond from DB client");
