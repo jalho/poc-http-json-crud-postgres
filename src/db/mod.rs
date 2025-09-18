@@ -2,7 +2,9 @@ pub mod schema;
 
 use crate::db::schema::books::dsl::books;
 
-use diesel::{RunQueryDsl, debug_query};
+use diesel::{
+    RunQueryDsl,
+};
 
 pub struct Actor {
     term: crate::term::Handle,
@@ -63,7 +65,7 @@ impl Actor {
                     use diesel::query_dsl::methods::SelectDsl;
                     let query = books.select(selection);
 
-                    let query_dbg: String = debug_query::<diesel::pg::Pg, _>(&query).to_string();
+                    let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     println!("{query_dbg}");
 
                     let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(connection);
