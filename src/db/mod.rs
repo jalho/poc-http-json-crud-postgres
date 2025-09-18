@@ -69,7 +69,7 @@ impl Actor {
                     let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
-                        eprintln!("failed to respond from DB client");
+                        log::error!("Failed to respond from DB client");
                     }
                 }
 

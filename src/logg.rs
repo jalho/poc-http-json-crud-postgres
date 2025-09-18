@@ -17,7 +17,7 @@ pub fn initialize_logger(level: log::LevelFilter) -> Result<log4rs::Handle, std:
     ) {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("Building logger config failed: {err}");
+            log::error!("Building logger config failed: {err}");
             return Err(std::process::ExitCode::from(42));
         }
     };
@@ -25,7 +25,7 @@ pub fn initialize_logger(level: log::LevelFilter) -> Result<log4rs::Handle, std:
     match log4rs::init_config(config) {
         Ok(handle) => Ok(handle),
         Err(err) => {
-            eprintln!("Initializing logger failed: {err}");
+            log::error!("Initializing logger failed: {err}");
             Err(std::process::ExitCode::from(43))
         }
     }

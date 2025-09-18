@@ -46,7 +46,7 @@ impl Actor {
         let listener: tokio::net::TcpListener = match tokio::net::TcpListener::bind(self.listen_address).await {
             Ok(n) => n,
             Err(err) => {
-                eprintln!("{err}");
+                log::error!("{err}");
                 self.term
                     .trigger_termination(crate::term::TriggerGlobalCancellation::WebServer)
                     .await;

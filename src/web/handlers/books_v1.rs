@@ -9,7 +9,7 @@ pub async fn get_many(
     {
         let lock = state.db_client_shared.lock().await;
         if let Err(err) = lock.send(db_query).await {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         };
     }
@@ -17,7 +17,7 @@ pub async fn get_many(
     let db_response = match db_rx.await {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -25,7 +25,7 @@ pub async fn get_many(
     let query_response: Vec<crate::db::schema::Book> = match db_response {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -49,7 +49,7 @@ pub async fn get_one_by_id(
     {
         let lock = state.db_client_shared.lock().await;
         if let Err(err) = lock.send(db_query).await {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         };
     }
@@ -57,7 +57,7 @@ pub async fn get_one_by_id(
     let db_response = match db_rx.await {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -65,7 +65,7 @@ pub async fn get_one_by_id(
     let query_response: crate::db::schema::Book = match db_response {
         Ok(n) => n,
         Err(err) => {
-            eprintln!("{err}");
+            log::error!("{err}");
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
