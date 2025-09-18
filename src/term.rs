@@ -33,4 +33,16 @@ pub struct Handle {
     write: tokio::sync::mpsc::Sender<TriggerGlobalCancellation>,
 }
 
+impl Handle {
+    pub async fn trigger_termination(&self) {
+        if let Err(err) = self.write.send(TriggerGlobalCancellation).await {
+            eprintln!("{err}");
+        }
+    }
+
+    pub fn token(self) -> tokio_util::sync::CancellationToken {
+        self.read
+    }
+}
+
 pub struct TriggerGlobalCancellation;

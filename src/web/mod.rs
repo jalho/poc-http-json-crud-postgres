@@ -25,16 +25,31 @@ impl Actor {
     }
 
     pub async fn work(self) -> Summary {
-        /*
-         * TODO: Activate global termination signal in case of errors!
-         */
-        let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(self.listen_address).await.unwrap();
+        let listener: tokio::net::TcpListener = match tokio::net::TcpListener::bind(self.listen_address).await {
+            Ok(n) => n,
+            Err(err) => {
+                eprintln!("{err}");
+                self.term.trigger_termination().await;
+                return Summary;
+            }
+        };
 
-        /*
-         * TODO: Run until global termination signal canceled!
-         */
-        axum::serve(listener, self.router).await.unwrap();
-        todo!();
+        self.term
+            .token()
+            .run_until_cancelled(async {
+                if let Err(err) = axum::serve(listener, self.router).await {
+                    /*
+                     * From axum's docs (v0.8.4):
+                     *
+                     * > Although this future resolves to `io::Result<()>`, it
+                     * > will never actually complete or return an error.
+                     */
+                    unreachable!("axum::serve never completes or returns an error: {err}");
+                };
+            })
+            .await;
+
+        Summary
     }
 }
 
