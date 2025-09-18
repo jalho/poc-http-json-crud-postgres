@@ -2,8 +2,6 @@ pub mod schema;
 
 use crate::db::schema::books::dsl::books;
 
-use diesel::query_dsl::methods::SelectDsl;
-use diesel::{Connection, SelectableHelper};
 use diesel::{RunQueryDsl, debug_query};
 
 pub struct Actor {
@@ -17,6 +15,7 @@ pub struct Actor {
 
 impl Actor {
     pub fn connect(term: crate::term::Handle, connection_string: &str) -> Result<Self, diesel::ConnectionError> {
+        use diesel::Connection;
         let db_connection: diesel::PgConnection = diesel::pg::PgConnection::establish(connection_string)?;
 
         let (tx_query, rx_query) = tokio::sync::mpsc::channel::<Query>(1);
@@ -58,9 +57,12 @@ impl Actor {
 
             match query_received {
                 Query::SelectManyBooks { respond_to } => {
+                    use diesel::SelectableHelper;
                     let selection = schema::Book::as_select();
 
+                    use diesel::query_dsl::methods::SelectDsl;
                     let query = books.select(selection);
+
                     let query_dbg: String = debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     println!("{query_dbg}");
 
