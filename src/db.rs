@@ -9,4 +9,10 @@ impl Actor {
         let connection: diesel::PgConnection = diesel::pg::PgConnection::establish(connection_string)?;
         Ok(Self { connection })
     }
+
+    pub async fn work(self) -> Summary {
+       todo!(); 
+    }
 }
+
+pub struct Summary;

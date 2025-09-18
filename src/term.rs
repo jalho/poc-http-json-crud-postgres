@@ -1,7 +1,7 @@
 pub struct Actor {}
 
 impl Actor {
-    pub fn init(listen_address: &str) -> Self {
+    pub fn hook() -> Self {
         Self {}
     }
 

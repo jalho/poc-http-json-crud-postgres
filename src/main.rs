@@ -1,4 +1,5 @@
 mod db;
+mod term;
 mod web;
 
 /// Proof-of-concept implementation demonstrating:
@@ -19,7 +20,9 @@ mod web;
 ///     docker.io/library/postgres:17.6-trixie@sha256:feff5b24fedd610975a1f5e743c51a4b360437f4dc3a11acf740dcd708f413f6
 ///   ```
 fn main() -> std::process::ExitCode {
-    let db: db::Actor =
+    let terminator = term::Actor::hook();
+
+    let db_client: db::Actor =
         match db::Actor::connect("postgres://postgres:postgres@127.0.0.1:5432/postgres?connect_timeout=1") {
             Ok(n) => n,
             Err(err) => {
@@ -28,6 +31,8 @@ fn main() -> std::process::ExitCode {
             }
         };
 
+    let web_server: web::Actor = web::Actor::init("127.0.0.1:8080");
+
     let runtime: tokio::runtime::Runtime = match tokio::runtime::Builder::new_current_thread().build() {
         Ok(n) => n,
         Err(err) => {
@@ -35,6 +40,9 @@ fn main() -> std::process::ExitCode {
             return std::process::ExitCode::from(43);
         }
     };
+
+    let _done: (db::Summary, web::Summary, term::Summary) =
+        runtime.block_on(async { tokio::join!(db_client.work(), web_server.work(), terminator.work()) });
 
     std::process::ExitCode::SUCCESS
 }
