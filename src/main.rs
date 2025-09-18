@@ -49,7 +49,6 @@ mod web;
 ///   ```json
 ///   [{"id":"00000000-0000-0000-0000-000000000000","title":"Foo Bar!"}]
 ///   ```
-
 fn main() -> std::process::ExitCode {
     if let Err(code) = logg::initialize_logger(log::LevelFilter::Trace) {
         return code;
