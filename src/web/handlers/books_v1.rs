@@ -1,6 +1,6 @@
 pub async fn get_many(
     state: axum::extract::State<std::sync::Arc<crate::web::State>>,
-) -> Result<axum::Json<Vec<crate::db::Book>>, axum::http::StatusCode> {
+) -> Result<axum::Json<Vec<crate::db::schema::Book>>, axum::http::StatusCode> {
     let state: std::sync::Arc<crate::web::State> = state.0;
 
     let (db_tx, db_rx) = tokio::sync::oneshot::channel();
@@ -22,7 +22,7 @@ pub async fn get_many(
         }
     };
 
-    let query_response: Vec<crate::db::Book> = match db_response {
+    let query_response: Vec<crate::db::schema::Book> = match db_response {
         Ok(n) => n,
         Err(err) => {
             eprintln!("{err}");

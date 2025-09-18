@@ -1,18 +1,9 @@
+pub mod schema;
+
+use crate::db::schema::books::dsl::books;
+use diesel::RunQueryDsl;
+use diesel::query_dsl::methods::SelectDsl;
 use diesel::{Connection, SelectableHelper};
-
-diesel::table! {
-    books (id) {
-        id -> Int4,
-        title -> Varchar,
-    }
-}
-
-#[derive(serde::Serialize, diesel::Queryable, diesel::Identifiable, diesel::Selectable, Debug, PartialEq, Clone)]
-#[diesel(table_name = books)]
-pub struct Book {
-    pub id: i32,
-    pub title: String,
-}
 
 pub struct Actor {
     term: crate::term::Handle,
@@ -47,14 +38,10 @@ impl Actor {
                     }
                 };
 
-                use crate::db::books::dsl::books;
-                use diesel::RunQueryDsl;
-                use diesel::query_dsl::methods::SelectDsl;
-
                 match query_received {
                     Query::SelectManyBooks { respond_to } => {
-                        let db_query_result: Result<Vec<Book>, diesel::result::Error> =
-                            books.select(Book::as_select()).load(&mut self.connection);
+                        let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> =
+                            books.select(schema::Book::as_select()).load(&mut self.connection);
 
                         if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
                             eprintln!("failed to respond from DB client");
@@ -84,10 +71,10 @@ impl Query {
     }
 }
 
-pub struct Response(pub Result<Vec<Book>, diesel::result::Error>);
+pub struct Response(pub Result<Vec<schema::Book>, diesel::result::Error>);
 
 impl Response {
-    pub fn new(result: Result<Vec<Book>, diesel::result::Error>) -> Self {
+    pub fn new(result: Result<Vec<schema::Book>, diesel::result::Error>) -> Self {
         Self(result)
     }
 }
