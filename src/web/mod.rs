@@ -6,7 +6,7 @@ pub struct Actor {
 }
 
 impl Actor {
-    pub fn init(listen_address: &str) -> Self {
+    pub fn init(listen_address: &str, db_client: tokio::sync::mpsc::Sender<crate::db::Query>) -> Self {
         let router: axum::Router =
             axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
         Self {

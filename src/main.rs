@@ -31,9 +31,9 @@ fn main() -> std::process::ExitCode {
             }
         };
 
-    let web_server: web::Actor = web::Actor::init("127.0.0.1:8080");
+    let web_server: web::Actor = web::Actor::init("127.0.0.1:8080", db_client.get_handle());
 
-    let runtime: tokio::runtime::Runtime = match tokio::runtime::Builder::new_current_thread().build() {
+    let runtime: tokio::runtime::Runtime = match tokio::runtime::Builder::new_current_thread().enable_io().build() {
         Ok(n) => n,
         Err(err) => {
             eprintln!("{err}");
