@@ -24,14 +24,21 @@ impl Actor {
     }
 
     pub async fn work(mut self) -> Summary {
-        'recv: loop {
-            let received: Query = match self.chan_query.1.recv().await {
-                Some(n) => n,
-                None => {
-                    break 'recv;
-                }
-            };
-        }
+        let job = async {
+            'recv: loop {
+                let received: Query = match self.chan_query.1.recv().await {
+                    Some(n) => n,
+                    None => {
+                        break 'recv;
+                    }
+                };
+                todo!(
+                    "handle query: do something with DB connection in self, and then write response back to the response sender contained in the Query"
+                );
+            }
+        };
+
+        self.term.token().run_until_cancelled(job).await;
 
         Summary
     }
@@ -39,4 +46,8 @@ impl Actor {
 
 pub struct Summary;
 
-pub struct Query;
+pub struct Query {
+    respond_to: tokio::sync::oneshot::Sender<Response>,
+}
+
+pub struct Response;
