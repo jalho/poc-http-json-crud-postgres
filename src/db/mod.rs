@@ -46,7 +46,7 @@ impl Actor {
         db_connection: &mut diesel::PgConnection,
         query_recv: &mut tokio::sync::mpsc::Receiver<Query>,
     ) -> () {
-        {
+        loop {
             let query_received: Query = match query_recv.recv().await {
                 Some(n) => n,
                 None => {
