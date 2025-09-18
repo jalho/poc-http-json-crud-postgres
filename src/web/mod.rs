@@ -7,7 +7,8 @@ pub struct Actor {
 
 impl Actor {
     pub fn init(listen_address: &str) -> Self {
-        let router: axum::Router = axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
+        let router: axum::Router =
+            axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
         Self {
             router,
             listen_address: listen_address.to_owned(),
@@ -15,6 +16,15 @@ impl Actor {
     }
 
     pub async fn work(self) -> Summary {
+        /*
+         * TODO: Activate global termination signal in case of errors!
+         */
+        let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(self.listen_address).await.unwrap();
+
+        /*
+         * TODO: Run until global termination signal canceled!
+         */
+        axum::serve(listener, self.router).await.unwrap();
         todo!();
     }
 }

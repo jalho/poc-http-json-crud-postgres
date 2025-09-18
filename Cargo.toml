@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum       = { version = "=0.8.4",   default-features = false, features = [ ] }
+axum       = { version = "=0.8.4",   default-features = false, features = [ "tokio", "http1" ] }
 diesel     = { version = "=2.3.1",   default-features = false, features = [ "postgres" ] }
 pq-sys     = { version = "=0.7.2",   default-features = false, features = [ "bundled" ] }
 # serde      = { version = "=1.0.225", default-features = false, features = [ ] }
 # serde_json = { version = "=1.0.145", default-features = false, features = [ ] }
-tokio      = { version = "=1.47.1",  default-features = false, features = [ "rt", "macros" ] }
+tokio      = { version = "=1.47.1",  default-features = false, features = [ "rt", "macros", "net" ] }
