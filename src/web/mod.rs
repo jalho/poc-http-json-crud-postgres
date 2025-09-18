@@ -30,6 +30,7 @@ impl Actor {
         let state: std::sync::Arc<State> = State::init(db_client);
 
         let router: axum::Router = axum::Router::new()
+            .route("/api/books/v1", axum::routing::post(books_v1::post_one))
             .route("/api/books/v1", axum::routing::get(books_v1::get_many))
             .route("/api/books/v1/{id}", axum::routing::get(books_v1::get_one_by_id))
             .with_state(state);

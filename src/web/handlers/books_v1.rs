@@ -14,7 +14,7 @@ pub async fn get_many(
         };
     }
 
-    let db_response = match db_rx.await {
+    let db_actor_response = match db_rx.await {
         Ok(n) => n,
         Err(err) => {
             log::error!("{err}");
@@ -22,7 +22,7 @@ pub async fn get_many(
         }
     };
 
-    let query_response: Vec<crate::db::schema::Book> = match db_response {
+    let db_response: Vec<crate::db::schema::Book> = match db_actor_response {
         Ok(n) => n,
         Err(err) => {
             log::error!("{err}");
@@ -30,7 +30,7 @@ pub async fn get_many(
         }
     };
 
-    Ok(axum::Json(query_response))
+    Ok(axum::Json(db_response))
 }
 
 pub async fn get_one_by_id(
@@ -54,7 +54,7 @@ pub async fn get_one_by_id(
         };
     }
 
-    let db_response = match db_rx.await {
+    let db_actor_response = match db_rx.await {
         Ok(n) => n,
         Err(err) => {
             log::error!("{err}");
@@ -62,7 +62,7 @@ pub async fn get_one_by_id(
         }
     };
 
-    let query_response: crate::db::schema::Book = match db_response {
+    let db_response: crate::db::schema::Book = match db_actor_response {
         Ok(n) => n,
         Err(err) => {
             log::error!("{err}");
@@ -70,5 +70,45 @@ pub async fn get_one_by_id(
         }
     };
 
-    Ok(axum::Json(query_response))
+    Ok(axum::Json(db_response))
+}
+
+pub async fn post_one(
+    state: axum::extract::State<std::sync::Arc<crate::web::State>>,
+    book: axum::Json<crate::db::schema::Book>,
+) -> Result<(), axum::http::StatusCode> {
+    let state: std::sync::Arc<crate::web::State> = state.0;
+    let book: crate::db::schema::Book = book.0;
+
+    let (db_tx, db_rx) = tokio::sync::oneshot::channel();
+    let db_query: crate::db::Query = crate::db::Query::InsertOne {
+        respond_to: db_tx,
+        book,
+    };
+
+    {
+        let lock = state.db_client_shared.lock().await;
+        if let Err(err) = lock.send(db_query).await {
+            log::error!("{err}");
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        };
+    }
+
+    let db_actor_response = match db_rx.await {
+        Ok(n) => n,
+        Err(err) => {
+            log::error!("{err}");
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let _db_response: usize = match db_actor_response {
+        Ok(n) => n,
+        Err(err) => {
+            log::error!("{err}");
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    Ok(())
 }

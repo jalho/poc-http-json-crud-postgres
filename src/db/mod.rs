@@ -72,7 +72,6 @@ impl Actor {
                         log::error!("Failed to respond from DB client");
                     }
                 }
-
                 Query::SelectOneBookById { respond_to, book_id } => {
                     use diesel::SelectableHelper;
                     let selection = schema::Book::as_select();
@@ -92,6 +91,17 @@ impl Actor {
                         log::error!("Failed to respond from DB client");
                     }
                 }
+                Query::InsertOne { respond_to, book } => {
+                    use diesel::RunQueryDsl;
+                    let db_query_result: Result<usize, diesel::result::Error> =
+                        diesel::insert_into(schema::books::table)
+                            .values(&book)
+                            .execute(db_connection)
+                            .map(|n| n);
+                    if let Err(_err) = respond_to.send(db_query_result) {
+                        log::error!("Failed to respond from DB client");
+                    }
+                }
             }
         }
     }
@@ -106,5 +116,9 @@ pub enum Query {
     SelectOneBookById {
         respond_to: tokio::sync::oneshot::Sender<Result<schema::Book, diesel::result::Error>>,
         book_id: uuid::Uuid,
+    },
+    InsertOne {
+        respond_to: tokio::sync::oneshot::Sender<Result<usize, diesel::result::Error>>,
+        book: schema::Book,
     },
 }

@@ -5,7 +5,17 @@ diesel::table! {
     }
 }
 
-#[derive(serde::Serialize, diesel::Queryable, diesel::Identifiable, diesel::Selectable, Debug, PartialEq, Clone)]
+#[derive(
+    serde::Deserialize,
+    serde::Serialize,
+    diesel::Queryable,
+    diesel::Identifiable,
+    diesel::Selectable,
+    diesel::Insertable,
+    Debug,
+    PartialEq,
+    Clone,
+)]
 #[diesel(table_name = books)]
 pub struct Book {
     pub id: uuid::Uuid,
