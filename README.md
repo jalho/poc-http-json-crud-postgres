@@ -7,6 +7,12 @@ Proof-of-concept implementation demonstrating:
 - Using _actor pattern_ in _tokio_ ecosystem (inspired by Alice Ryhl: _Actors
   with Tokio_, RustLab Conference 2022)
 
+### Usage
+
+```console
+cargo run
+```
+
 ### Cheatsheet
 
 - Starting a containerized PostgreSQL instance (using Podman v4.3.1):
