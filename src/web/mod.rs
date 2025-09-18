@@ -1,3 +1,5 @@
+mod handlers;
+
 pub struct Actor {
     listen_address: String,
     router: axum::Router,
@@ -5,7 +7,7 @@ pub struct Actor {
 
 impl Actor {
     pub fn init(listen_address: &str) -> Self {
-        let router: axum::Router = axum::Router::new().route("/", axum::routing::get(|| async { "Hello, World!" }));
+        let router: axum::Router = axum::Router::new().route("/", axum::routing::get(handlers::get_foos::handle_request));
         Self {
             router,
             listen_address: listen_address.to_owned(),
