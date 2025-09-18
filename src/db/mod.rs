@@ -57,8 +57,10 @@ impl Actor {
 
             match query_received {
                 Query::SelectManyBooks { respond_to } => {
+                    let selection = schema::Book::as_select();
+
                     let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> =
-                        books.select(schema::Book::as_select()).load(connection);
+                        books.select(selection).load(connection);
 
                     if let Err(_err) = respond_to.send(Response::new(db_query_result)) {
                         eprintln!("failed to respond from DB client");
