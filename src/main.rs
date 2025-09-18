@@ -20,7 +20,7 @@ mod web;
 ///     docker.io/library/postgres:17.6-trixie@sha256:feff5b24fedd610975a1f5e743c51a4b360437f4dc3a11acf740dcd708f413f6
 ///   ```
 fn main() -> std::process::ExitCode {
-    let terminator = term::Actor::hook();
+    let terminator: term::Actor = term::Actor::hook();
 
     let db_client: db::Actor =
         match db::Actor::connect("postgres://postgres:postgres@127.0.0.1:5432/postgres?connect_timeout=1") {
