@@ -83,21 +83,21 @@ mod api {
     }
 
     impl From<crate::db::schema_v1::Book> for Book {
-        fn from(value: crate::db::schema_v1::Book) -> Self {
+        fn from(db: crate::db::schema_v1::Book) -> Self {
             Self {
-                id: value.id,
-                removed_at_utc: value.removed_at_utc,
-                title: value.title,
+                id: db.id,
+                removed_at_utc: db.removed_at_utc,
+                title: db.title,
             }
         }
     }
 
     impl From<Book> for crate::db::schema_v1::Book {
-        fn from(value: Book) -> Self {
+        fn from(api: Book) -> Self {
             crate::db::schema_v1::Book {
-                id: value.id,
-                removed_at_utc: value.removed_at_utc,
-                title: value.title,
+                id: api.id,
+                removed_at_utc: api.removed_at_utc,
+                title: api.title,
             }
         }
     }
