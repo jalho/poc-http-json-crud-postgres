@@ -72,6 +72,8 @@ generally, some fundamental characteristics of actors are:
 cargo run
 ```
 
+Entry point is at [`./src/main.rs`](./src/main.rs).
+
 ### Cheatsheet
 
 - Starting a containerized PostgreSQL instance (using Podman v4.3.1):
