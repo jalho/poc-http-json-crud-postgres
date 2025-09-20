@@ -1,3 +1,7 @@
+//! Database schema. Not to be confused with the schema exposed via the HTTP CRUD
+//! API. Separation is useful to allow the two to evolve independently of each
+//! other.
+
 diesel::table! {
     books (id) {
         // UUID PRIMARY KEY

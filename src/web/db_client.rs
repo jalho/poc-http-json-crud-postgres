@@ -8,7 +8,7 @@ impl DatabaseClient {
         Self { tx_query }
     }
 
-    pub async fn select_books_all(&mut self) -> Result<Vec<crate::db::schema::Book>, ()> {
+    pub async fn select_books_all(&mut self) -> Result<Vec<crate::db::schema_v1::Book>, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
         let db_query: crate::db::Query = crate::db::Query::SelectBooksAll { respond_to: tx };
 
@@ -25,7 +25,7 @@ impl DatabaseClient {
             }
         };
 
-        let books: Vec<crate::db::schema::Book> = match db_actor_response {
+        let books: Vec<crate::db::schema_v1::Book> = match db_actor_response {
             Ok(n) => n,
             Err(err) => {
                 log::error!("{err}");
@@ -36,7 +36,7 @@ impl DatabaseClient {
         return Ok(books);
     }
 
-    pub async fn select_book_by_id(&mut self, book_id: uuid::Uuid) -> Result<crate::db::schema::Book, ()> {
+    pub async fn select_book_by_id(&mut self, book_id: uuid::Uuid) -> Result<crate::db::schema_v1::Book, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
         let db_query: crate::db::Query = crate::db::Query::SelectBookById {
             respond_to: tx,
@@ -56,7 +56,7 @@ impl DatabaseClient {
             }
         };
 
-        let book: crate::db::schema::Book = match db_actor_response {
+        let book: crate::db::schema_v1::Book = match db_actor_response {
             Ok(n) => n,
             Err(err) => {
                 log::error!("{err}");
@@ -67,7 +67,7 @@ impl DatabaseClient {
         return Ok(book);
     }
 
-    pub async fn insert_book(&mut self, book: crate::db::schema::Book) -> Result<usize, ()> {
+    pub async fn insert_book(&mut self, book: crate::db::schema_v1::Book) -> Result<usize, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
         let db_query: crate::db::Query = crate::db::Query::InsertBook { respond_to: tx, book };
 

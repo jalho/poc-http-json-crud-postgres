@@ -1,6 +1,6 @@
-pub mod schema;
+pub mod schema_v1;
 
-use crate::db::schema::books::dsl::books;
+use crate::db::schema_v1::books::dsl::books;
 
 pub struct Actor {
     term: crate::term::Handle,
@@ -56,7 +56,7 @@ impl Actor {
 
             match query_received {
                 Query::InsertBook { respond_to, book } => {
-                    let query = diesel::insert_into(schema::books::table).values(&book);
+                    let query = diesel::insert_into(schema_v1::books::table).values(&book);
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
@@ -71,7 +71,7 @@ impl Actor {
 
                 Query::SelectBooksAll { respond_to } => {
                     use diesel::SelectableHelper;
-                    let selection = schema::Book::as_select();
+                    let selection = schema_v1::Book::as_select();
 
                     use diesel::query_dsl::methods::SelectDsl;
                     let query = books.select(selection);
@@ -80,7 +80,7 @@ impl Actor {
                     log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
-                    let db_query_result: Result<Vec<schema::Book>, diesel::result::Error> = query.load(db_connection);
+                    let db_query_result: Result<Vec<schema_v1::Book>, diesel::result::Error> = query.load(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
                         log::error!("Failed to respond from DB client");
@@ -89,18 +89,18 @@ impl Actor {
 
                 Query::SelectBookById { respond_to, book_id } => {
                     use diesel::SelectableHelper;
-                    let selection = schema::Book::as_select();
+                    let selection = schema_v1::Book::as_select();
 
                     use diesel::ExpressionMethods;
                     use diesel::query_dsl::methods::FilterDsl;
                     use diesel::query_dsl::methods::SelectDsl;
-                    let query = books.filter(schema::books::id.eq(book_id)).select(selection);
+                    let query = books.filter(schema_v1::books::id.eq(book_id)).select(selection);
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
-                    let db_query_result: Result<schema::Book, diesel::result::Error> = query.get_result(db_connection);
+                    let db_query_result: Result<schema_v1::Book, diesel::result::Error> = query.get_result(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
                         log::error!("Failed to respond from DB client");
@@ -116,8 +116,8 @@ impl Actor {
 
                     use diesel::ExpressionMethods;
                     let query = diesel::update(books)
-                        .filter(schema::books::id.eq(book_id))
-                        .set(schema::books::removed_at_utc.eq(without_timezone));
+                        .filter(schema_v1::books::id.eq(book_id))
+                        .set(schema_v1::books::removed_at_utc.eq(without_timezone));
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
@@ -139,13 +139,13 @@ pub struct Summary;
 pub enum Query {
     InsertBook {
         respond_to: tokio::sync::oneshot::Sender<Result<usize, diesel::result::Error>>,
-        book: schema::Book,
+        book: schema_v1::Book,
     },
     SelectBooksAll {
-        respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
+        respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema_v1::Book>, diesel::result::Error>>,
     },
     SelectBookById {
-        respond_to: tokio::sync::oneshot::Sender<Result<schema::Book, diesel::result::Error>>,
+        respond_to: tokio::sync::oneshot::Sender<Result<schema_v1::Book, diesel::result::Error>>,
         book_id: uuid::Uuid,
     },
     UpdateBookSetRemovedById {
