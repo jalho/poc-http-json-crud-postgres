@@ -124,10 +124,7 @@ mod api {
             Self {
                 id: db.id,
                 title: db.title,
-                genre: {
-                    let genre: Genre = db.genre.into();
-                    genre.to_string()
-                },
+                genre: db.genre.to_string(),
                 page_count: db.page_count.try_into().ok(),
             }
         }
