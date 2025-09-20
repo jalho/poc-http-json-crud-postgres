@@ -92,11 +92,14 @@ impl Actor {
                     }
                 }
                 Query::InsertBook { respond_to, book } => {
+                    let query = diesel::insert_into(schema::books::table).values(&book);
+
+                    let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
+                    log::debug!("{query_dbg}");
+
                     use diesel::RunQueryDsl;
-                    let db_query_result: Result<usize, diesel::result::Error> =
-                        diesel::insert_into(schema::books::table)
-                            .values(&book)
-                            .execute(db_connection);
+                    let db_query_result: Result<usize, diesel::result::Error> = query.execute(db_connection);
+
                     if let Err(_err) = respond_to.send(db_query_result) {
                         log::error!("Failed to respond from DB client");
                     }
