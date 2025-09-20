@@ -10,7 +10,7 @@ impl DatabaseClient {
 
     pub async fn select_books_all(&mut self) -> Result<Vec<crate::db::schema::Book>, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let db_query: crate::db::Query = crate::db::Query::SelectManyBooks { respond_to: tx };
+        let db_query: crate::db::Query = crate::db::Query::SelectBooksAll { respond_to: tx };
 
         if let Err(err) = self.tx_query.send(db_query).await {
             log::error!("{err}");
@@ -38,7 +38,7 @@ impl DatabaseClient {
 
     pub async fn select_book_by_id(&mut self, book_id: uuid::Uuid) -> Result<crate::db::schema::Book, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let db_query: crate::db::Query = crate::db::Query::SelectOneBookById {
+        let db_query: crate::db::Query = crate::db::Query::SelectBookById {
             respond_to: tx,
             book_id: book_id,
         };
@@ -69,7 +69,7 @@ impl DatabaseClient {
 
     pub async fn insert_book(&mut self, book: crate::db::schema::Book) -> Result<usize, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let db_query: crate::db::Query = crate::db::Query::InsertOne { respond_to: tx, book };
+        let db_query: crate::db::Query = crate::db::Query::InsertBook { respond_to: tx, book };
 
         if let Err(err) = self.tx_query.send(db_query).await {
             log::error!("{err}");
