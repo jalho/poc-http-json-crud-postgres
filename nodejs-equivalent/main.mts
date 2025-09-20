@@ -22,10 +22,11 @@ async function main() {
   info("Connected to database");
 
   const server: libhttp.Server = libhttp.createServer(post_one);
-
-  const res = await client.query("SELECT $1::text as message", ["Hello world!"])
-  console.log(res.rows[0].message) // Hello world!
-  await client.end()
+  server.listen(
+    8080,
+    "127.0.0.1",
+    () => info("Listening: %s", JSON.stringify(server.address())),
+  );
 }
 main();
 
@@ -107,7 +108,7 @@ async function post_one(inbound: libhttp.IncomingMessage, outbound: libhttp.Serv
   const request_payload_decoded: string = request_payload.toString();
 
   /*
-   * Deserialize JSON.
+   * Deserialize JSON payload.
    */
   let json: unknown;
   try {
@@ -117,6 +118,42 @@ async function post_one(inbound: libhttp.IncomingMessage, outbound: libhttp.Serv
     outbound.end();
     return;
   }
+
+  /*
+   * Validate JSON payload.
+   */
+  let json_validated: { title: string, page_count: number };
+  if (
+    typeof json !== "object"
+    || json === null
+    || !("title" in json)
+    || !("page_count" in json)
+    || !Number.isInteger(json.page_count)
+    || typeof json.page_count !== "number"
+    || json.page_count < 0
+    || typeof json.title !== "string"
+  ) {
+    outbound.statusCode = 422;
+    outbound.end();
+    return;
+  } else {
+    json_validated = json as FuckTypeScript;
+  }
+  if (Object.entries(json_validated).length !== 2) {
+    outbound.statusCode = 422;
+    outbound.end();
+    return;
+  }
+
+  /*
+   * Request is now considered OK. Here, we could do the actual INSERT into the
+   * connected PostgreSQL instance... Omitting for brevity!
+   */
+  info("INSERT: %s", JSON.stringify(json_validated, null, 2));
+
+  outbound.statusCode = 204;
+  outbound.end();
+  return;
 }
 
 type FuckTypeScript = any;
