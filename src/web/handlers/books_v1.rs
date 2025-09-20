@@ -4,9 +4,11 @@
 
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
-    axum::Json(book): axum::Json<api::Book>,
+    axum::Json(book): axum::Json<api::BookUntagged>,
 ) -> axum::http::StatusCode {
-    let _rows_affected: usize = match shared.db_client.insert_book(book.into()).await {
+    let creatable: api::BookTagged = book.with_random_id();
+
+    let _rows_affected: usize = match shared.db_client.insert_book(creatable.into()).await {
         Ok(n) => n,
         Err(_) => {
             return axum::http::StatusCode::INTERNAL_SERVER_ERROR;
@@ -18,7 +20,7 @@ pub async fn post_one(
 
 pub async fn get_all(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
-) -> Result<axum::Json<Vec<api::Book>>, axum::http::StatusCode> {
+) -> Result<axum::Json<Vec<api::BookTagged>>, axum::http::StatusCode> {
     let all_books: Vec<crate::db::schema_v1::Book> = match shared.db_client.select_books_all().await {
         Ok(n) => n,
         Err(_) => {
@@ -26,7 +28,7 @@ pub async fn get_all(
         }
     };
 
-    let all_books: Vec<api::Book> = all_books.into_iter().map(|n| n.into()).collect();
+    let all_books: Vec<api::BookTagged> = all_books.into_iter().map(|n| n.into()).collect();
 
     Ok(axum::Json(all_books))
 }
@@ -34,7 +36,7 @@ pub async fn get_all(
 pub async fn get_one_by_id(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
     axum::extract::Path(book_id): axum::extract::Path<uuid::Uuid>,
-) -> Result<axum::Json<api::Book>, axum::http::StatusCode> {
+) -> Result<axum::Json<api::BookTagged>, axum::http::StatusCode> {
     let book: crate::db::schema_v1::Book = match shared.db_client.select_book_by_id(book_id).await {
         Ok(n) => n,
         Err(_) => {
@@ -75,14 +77,44 @@ pub async fn delete_one_by_id(
 mod api {
     /// HTTP API schema. Not to be confused with the database schema. Separation is
     /// useful to allow the two to evolve independently of each other.
+    ///
+    /// Tagged means identifiers and other meta data included.
     #[derive(serde::Serialize, serde::Deserialize)]
-    pub struct Book {
+    #[serde(deny_unknown_fields)]
+    pub struct BookTagged {
+        /*
+         * Meta data.
+         */
         pub id: uuid::Uuid,
         pub removed_at_utc: Option<chrono::NaiveDateTime>,
+
+        /*
+         * Data.
+         */
         pub title: String,
     }
 
-    impl From<crate::db::schema_v1::Book> for Book {
+    /// HTTP API schema. Not to be confused with the database schema. Separation is
+    /// useful to allow the two to evolve independently of each other.
+    ///
+    /// Untagged means identifiers and other meta data omitted.
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct BookUntagged {
+        pub title: String,
+    }
+
+    impl BookUntagged {
+        pub fn with_random_id(self) -> BookTagged {
+            BookTagged {
+                id: uuid::Uuid::new_v4(),
+                removed_at_utc: None,
+                title: self.title,
+            }
+        }
+    }
+
+    impl From<crate::db::schema_v1::Book> for BookTagged {
         fn from(db: crate::db::schema_v1::Book) -> Self {
             Self {
                 id: db.id,
@@ -92,8 +124,8 @@ mod api {
         }
     }
 
-    impl From<Book> for crate::db::schema_v1::Book {
-        fn from(api: Book) -> Self {
+    impl From<BookTagged> for crate::db::schema_v1::Book {
+        fn from(api: BookTagged) -> Self {
             crate::db::schema_v1::Book {
                 id: api.id,
                 removed_at_utc: api.removed_at_utc,
