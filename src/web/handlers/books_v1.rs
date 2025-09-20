@@ -149,7 +149,7 @@ mod api {
                 Genre::history => write!(f, "History"),
                 Genre::horror => write!(f, "Horror"),
                 Genre::scifi => write!(f, "Science Fiction"),
-                Genre::scitech => write!(f, "Science and Techonology"),
+                Genre::scitech => write!(f, "Science and Technology"),
                 Genre::other => write!(f, "Other"),
             }
         }
@@ -161,7 +161,7 @@ mod api {
                 "History" => Self::history,
                 "Horror" => Self::horror,
                 "Science Fiction" => Self::scifi,
-                "Science and Techonology" => Self::scitech,
+                "Science and Technology" => Self::scitech,
                 _ => Self::other,
             }
         }
