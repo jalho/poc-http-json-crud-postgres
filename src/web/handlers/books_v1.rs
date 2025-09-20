@@ -36,7 +36,7 @@ pub async fn post_one(
     axum::Json(book): axum::Json<api::BookUnpopulated>,
 ) -> axum::http::StatusCode {
     let id: uuid::Uuid = uuid::Uuid::new_v4();
-    let book = book.populate(id, genre);
+    let book: crate::db::schema_v1::Book = book.populate(id, genre);
 
     let _rows_affected: usize = match shared.db_client.insert_book(book).await {
         Ok(n) => n,
