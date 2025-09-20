@@ -54,6 +54,11 @@ impl Actor {
                 }
             };
 
+            use diesel::ExpressionMethods;
+            use diesel::RunQueryDsl;
+            use diesel::SelectableHelper;
+            use diesel::query_dsl::methods::FilterDsl;
+            use diesel::query_dsl::methods::SelectDsl;
             match query_received {
                 Query::InsertBook { respond_to, book } => {
                     let query = diesel::insert_into(schema_v1::books::table).values(&book);
@@ -61,7 +66,6 @@ impl Actor {
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
 
-                    use diesel::RunQueryDsl;
                     let db_query_result: Result<usize, diesel::result::Error> = query.execute(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
@@ -70,20 +74,15 @@ impl Actor {
                 }
 
                 Query::SelectBooksNotRemoved { respond_to } => {
-                    use diesel::SelectableHelper;
                     let selection = schema_v1::Book::as_select();
 
-                    use diesel::query_dsl::methods::SelectDsl;
                     let query = books.select(selection);
 
-                    use diesel::ExpressionMethods;
-                    use diesel::query_dsl::methods::FilterDsl;
                     let query = query.filter(schema_v1::books::removed_at_utc.is_null());
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
 
-                    use diesel::RunQueryDsl;
                     let db_query_result: Result<Vec<schema_v1::Book>, diesel::result::Error> =
                         query.load(db_connection);
 
@@ -93,18 +92,13 @@ impl Actor {
                 }
 
                 Query::SelectBookById { respond_to, book_id } => {
-                    use diesel::SelectableHelper;
                     let selection = schema_v1::Book::as_select();
 
-                    use diesel::ExpressionMethods;
-                    use diesel::query_dsl::methods::FilterDsl;
-                    use diesel::query_dsl::methods::SelectDsl;
                     let query = books.filter(schema_v1::books::id.eq(book_id)).select(selection);
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
 
-                    use diesel::RunQueryDsl;
                     let db_query_result: Result<schema_v1::Book, diesel::result::Error> =
                         query.get_result(db_connection);
 
@@ -120,7 +114,6 @@ impl Actor {
                 } => {
                     let without_timezone: chrono::NaiveDateTime = removed_at_utc.naive_utc();
 
-                    use diesel::ExpressionMethods;
                     let query = diesel::update(books)
                         .filter(schema_v1::books::id.eq(book_id))
                         .set(schema_v1::books::removed_at_utc.eq(without_timezone));
@@ -128,7 +121,6 @@ impl Actor {
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
 
-                    use diesel::RunQueryDsl;
                     let db_query_result: Result<usize, diesel::result::Error> = query.execute(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
