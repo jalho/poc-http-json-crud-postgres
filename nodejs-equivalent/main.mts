@@ -87,7 +87,7 @@ async function post_one(inbound: libhttp.IncomingMessage, outbound: libhttp.Serv
    */
   const mime_type = inbound.headers["content-type"];
   if (mime_type !== "application/json") {
-    outbound.statusCode = 400;
+    outbound.statusCode = 415;
     outbound.end();
     return;
   }
