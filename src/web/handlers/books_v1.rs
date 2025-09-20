@@ -4,7 +4,7 @@
 
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
-    axum::extract::Path(genre): axum::extract::Path<String>,
+    axum::extract::Path(genre): axum::extract::Path<api::Genre>,
     axum::Json(book): axum::Json<api::BookUntagged>,
 ) -> axum::http::StatusCode {
     let id: uuid::Uuid = uuid::Uuid::new_v4();
@@ -108,12 +108,12 @@ mod api {
     }
 
     impl BookUntagged {
-        pub fn populate(self, id: uuid::Uuid, genre: String) -> BookTagged {
+        pub fn populate(self, id: uuid::Uuid, genre: Genre) -> BookTagged {
             BookTagged {
                 id,
                 removed_at_utc: None,
                 title: self.title,
-                genre,
+                genre: genre.to_string(),
                 page_count: self.page_count.into(),
             }
         }
@@ -125,7 +125,10 @@ mod api {
                 id: db.id,
                 removed_at_utc: db.removed_at_utc,
                 title: db.title,
-                genre: db.genre,
+                genre: {
+                    let genre: Genre = db.genre.into();
+                    genre.to_string()
+                },
                 page_count: db.page_count.try_into().ok(),
             }
         }
@@ -137,11 +140,45 @@ mod api {
                 id: api.id,
                 removed_at_utc: api.removed_at_utc,
                 title: api.title,
-                genre: api.genre,
+                genre: api.genre.to_string(),
                 page_count: match api.page_count {
                     Some(n) => n.into(),
                     None => 0,
                 },
+            }
+        }
+    }
+
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[allow(non_camel_case_types)]
+    pub enum Genre {
+        history,
+        horror,
+        scifi,
+        scitech,
+        other,
+    }
+
+    impl std::fmt::Display for Genre {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Genre::history => write!(f, "History"),
+                Genre::horror => write!(f, "Horror"),
+                Genre::scifi => write!(f, "Science Fiction"),
+                Genre::scitech => write!(f, "Science and Techonology"),
+                Genre::other => write!(f, "Other"),
+            }
+        }
+    }
+
+    impl From<String> for Genre {
+        fn from(value: String) -> Self {
+            match value.as_str() {
+                "History" => Self::history,
+                "Horror" => Self::horror,
+                "Science Fiction" => Self::scifi,
+                "Science and Techonology" => Self::scitech,
+                _ => Self::other,
             }
         }
     }
