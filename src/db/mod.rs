@@ -80,7 +80,8 @@ impl Actor {
                     log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
-                    let db_query_result: Result<Vec<schema_v1::Book>, diesel::result::Error> = query.load(db_connection);
+                    let db_query_result: Result<Vec<schema_v1::Book>, diesel::result::Error> =
+                        query.load(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
                         log::error!("Failed to respond from DB client");
@@ -100,7 +101,8 @@ impl Actor {
                     log::debug!("{query_dbg}");
 
                     use diesel::RunQueryDsl;
-                    let db_query_result: Result<schema_v1::Book, diesel::result::Error> = query.get_result(db_connection);
+                    let db_query_result: Result<schema_v1::Book, diesel::result::Error> =
+                        query.get_result(db_connection);
 
                     if let Err(_err) = respond_to.send(db_query_result) {
                         log::error!("Failed to respond from DB client");
