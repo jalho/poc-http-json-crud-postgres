@@ -1,8 +1,13 @@
 diesel::table! {
     books (id) {
+        // UUID PRIMARY KEY
         id -> Uuid,
-        title -> Varchar,
+
+        // TIMESTAMP WITHOUT TIME ZONE NULL
         removed_at_utc -> Nullable<Timestamp>,
+
+        // VARCHAR(256) NOT NULL
+        title -> Varchar,
     }
 }
 
