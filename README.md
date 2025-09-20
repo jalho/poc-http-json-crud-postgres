@@ -111,7 +111,3 @@ Entry point is at [`./src/main.rs`](./src/main.rs).
   ```console
   curl http://127.0.0.1:8080/api/books/v1
   ```
-
-  ```json
-  [{ "id": "00000000-0000-0000-0000-000000000000", "title": "Foo Bar!" }]
-  ```
