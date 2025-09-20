@@ -44,8 +44,8 @@ generally, some fundamental characteristics of actors are:
 - Each **connection actor** owns the I/O resources of a single inbound web
   request.
 
-  In the proof-of-concept implementation, connection actors are the
-  individual functions in module web::handlers::books_v1, which is defined in
+  In the proof-of-concept implementation, connection actors are the individual
+  functions in module `web::handlers::books_v1`, which is defined in
   [`./src/web/handlers/books_v1.rs`](./src/web/handlers/books_v1.rs).
 
   Connection actors are created by a web server that accepts connections.
