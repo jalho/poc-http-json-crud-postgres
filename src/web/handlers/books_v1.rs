@@ -4,9 +4,9 @@
 
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
-    axum::Json(book): axum::Json<crate::db::schema_v1::Book>,
+    axum::Json(book): axum::Json<api::Book>,
 ) -> axum::http::StatusCode {
-    let _rows_affected: usize = match shared.db_client.insert_book(book).await {
+    let _rows_affected: usize = match shared.db_client.insert_book((&book).into()).await {
         Ok(n) => n,
         Err(_) => {
             return axum::http::StatusCode::INTERNAL_SERVER_ERROR;
@@ -18,7 +18,7 @@ pub async fn post_one(
 
 pub async fn get_all(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
-) -> Result<axum::Json<Vec<crate::db::schema_v1::Book>>, axum::http::StatusCode> {
+) -> Result<axum::Json<Vec<api::Book>>, axum::http::StatusCode> {
     let all_books: Vec<crate::db::schema_v1::Book> = match shared.db_client.select_books_all().await {
         Ok(n) => n,
         Err(_) => {
@@ -26,13 +26,15 @@ pub async fn get_all(
         }
     };
 
+    let all_books: Vec<api::Book> = all_books.iter().map(|n| n.into()).collect();
+
     Ok(axum::Json(all_books))
 }
 
 pub async fn get_one_by_id(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
     axum::extract::Path(book_id): axum::extract::Path<uuid::Uuid>,
-) -> Result<axum::Json<crate::db::schema_v1::Book>, axum::http::StatusCode> {
+) -> Result<axum::Json<api::Book>, axum::http::StatusCode> {
     let book: crate::db::schema_v1::Book = match shared.db_client.select_book_by_id(book_id).await {
         Ok(n) => n,
         Err(_) => {
@@ -40,7 +42,7 @@ pub async fn get_one_by_id(
         }
     };
 
-    Ok(axum::Json(book))
+    Ok(axum::Json((&book).into()))
 }
 
 pub async fn delete_one_by_id(
@@ -68,4 +70,35 @@ pub async fn delete_one_by_id(
     };
 
     return axum::http::StatusCode::NO_CONTENT;
+}
+
+mod api {
+    /// HTTP API schema. Not to be confused with the database schema. Separation is
+    /// useful to allow the two to evolve independently of each other.
+    #[derive(serde::Serialize, serde::Deserialize)]
+    pub struct Book {
+        pub id: uuid::Uuid,
+        pub removed_at_utc: Option<chrono::NaiveDateTime>,
+        pub title: String,
+    }
+
+    impl From<&crate::db::schema_v1::Book> for Book {
+        fn from(value: &crate::db::schema_v1::Book) -> Self {
+            Self {
+                id: value.id,
+                removed_at_utc: value.removed_at_utc,
+                title: value.title.clone(),
+            }
+        }
+    }
+
+    impl Into<crate::db::schema_v1::Book> for &Book {
+        fn into(self) -> crate::db::schema_v1::Book {
+            crate::db::schema_v1::Book {
+                id: self.id,
+                removed_at_utc: self.removed_at_utc,
+                title: self.title.clone(),
+            }
+        }
+    }
 }

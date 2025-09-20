@@ -1,7 +1,3 @@
-//! Database schema. Not to be confused with the schema exposed via the HTTP CRUD
-//! API. Separation is useful to allow the two to evolve independently of each
-//! other.
-
 diesel::table! {
     books (id) {
         // UUID PRIMARY KEY
@@ -15,17 +11,10 @@ diesel::table! {
     }
 }
 
-#[derive(
-    serde::Deserialize,
-    serde::Serialize,
-    diesel::Queryable,
-    diesel::Identifiable,
-    diesel::Selectable,
-    diesel::Insertable,
-    Debug,
-    PartialEq,
-    Clone,
-)]
+/// Database schema. Not to be confused with the schema exposed via the HTTP
+/// CRUD API. Separation is useful to allow the two to evolve independently of
+/// each other.
+#[derive(diesel::Queryable, diesel::Identifiable, diesel::Selectable, diesel::Insertable, Debug, PartialEq, Clone)]
 #[diesel(table_name = books)]
 pub struct Book {
     /*
