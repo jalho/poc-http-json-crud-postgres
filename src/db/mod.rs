@@ -55,6 +55,20 @@ impl Actor {
             };
 
             match query_received {
+                Query::InsertBook { respond_to, book } => {
+                    let query = diesel::insert_into(schema::books::table).values(&book);
+
+                    let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
+                    log::debug!("{query_dbg}");
+
+                    use diesel::RunQueryDsl;
+                    let db_query_result: Result<usize, diesel::result::Error> = query.execute(db_connection);
+
+                    if let Err(_err) = respond_to.send(db_query_result) {
+                        log::error!("Failed to respond from DB client");
+                    }
+                }
+
                 Query::SelectBooksAll { respond_to } => {
                     use diesel::SelectableHelper;
                     let selection = schema::Book::as_select();
@@ -72,6 +86,7 @@ impl Actor {
                         log::error!("Failed to respond from DB client");
                     }
                 }
+
                 Query::SelectBookById { respond_to, book_id } => {
                     use diesel::SelectableHelper;
                     let selection = schema::Book::as_select();
@@ -91,8 +106,18 @@ impl Actor {
                         log::error!("Failed to respond from DB client");
                     }
                 }
-                Query::InsertBook { respond_to, book } => {
-                    let query = diesel::insert_into(schema::books::table).values(&book);
+
+                Query::UpdateBookSetRemovedById {
+                    respond_to,
+                    book_id,
+                    removed_at_utc,
+                } => {
+                    let without_timezone: chrono::NaiveDateTime = removed_at_utc.naive_utc();
+
+                    use diesel::ExpressionMethods;
+                    let query = diesel::update(books)
+                        .filter(schema::books::id.eq(book_id))
+                        .set(schema::books::removed_at_utc.eq(without_timezone));
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
@@ -112,6 +137,10 @@ impl Actor {
 pub struct Summary;
 
 pub enum Query {
+    InsertBook {
+        respond_to: tokio::sync::oneshot::Sender<Result<usize, diesel::result::Error>>,
+        book: schema::Book,
+    },
     SelectBooksAll {
         respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema::Book>, diesel::result::Error>>,
     },
@@ -119,8 +148,9 @@ pub enum Query {
         respond_to: tokio::sync::oneshot::Sender<Result<schema::Book, diesel::result::Error>>,
         book_id: uuid::Uuid,
     },
-    InsertBook {
+    UpdateBookSetRemovedById {
         respond_to: tokio::sync::oneshot::Sender<Result<usize, diesel::result::Error>>,
-        book: schema::Book,
+        book_id: uuid::Uuid,
+        removed_at_utc: chrono::DateTime<chrono::Utc>,
     },
 }

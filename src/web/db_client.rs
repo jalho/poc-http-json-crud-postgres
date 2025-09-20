@@ -94,4 +94,40 @@ impl DatabaseClient {
 
         return Ok(rows_affected);
     }
+
+    pub async fn update_book_set_removed(
+        &mut self,
+        book_id: uuid::Uuid,
+        removed_at_utc: chrono::DateTime<chrono::Utc>,
+    ) -> Result<usize, ()> {
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let db_query: crate::db::Query = crate::db::Query::UpdateBookSetRemovedById {
+            respond_to: tx,
+            book_id,
+            removed_at_utc,
+        };
+
+        if let Err(err) = self.tx_query.send(db_query).await {
+            log::error!("{err}");
+            return Err(());
+        };
+
+        let db_actor_response = match rx.await {
+            Ok(n) => n,
+            Err(err) => {
+                log::error!("{err}");
+                return Err(());
+            }
+        };
+
+        let rows_affected: usize = match db_actor_response {
+            Ok(n) => n,
+            Err(err) => {
+                log::error!("{err}");
+                return Err(());
+            }
+        };
+
+        return Ok(rows_affected);
+    }
 }

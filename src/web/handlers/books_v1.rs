@@ -1,3 +1,7 @@
+//! Function naming convention: HTTP method (conveying create-read-update-delete
+//! semantics), followed by scalar (e.g. `one` or `many`), followed by selector
+//! (e.g. `by_id`).
+
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
     axum::Json(book): axum::Json<crate::db::schema::Book>,
@@ -37,4 +41,20 @@ pub async fn get_one_by_id(
     };
 
     Ok(axum::Json(book))
+}
+
+pub async fn delete_one_by_id(
+    axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
+    axum::extract::Path(book_id): axum::extract::Path<uuid::Uuid>,
+) -> axum::http::StatusCode {
+    let removal_instant: chrono::DateTime<chrono::Utc> = chrono::Utc::now();
+
+    let _rows_affected: usize = match shared.db_client.update_book_set_removed(book_id, removal_instant).await {
+        Ok(n) => n,
+        Err(_) => {
+            return axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+        }
+    };
+
+    return axum::http::StatusCode::NO_CONTENT;
 }
