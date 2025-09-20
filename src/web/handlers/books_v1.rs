@@ -2,6 +2,34 @@
 //! semantics), followed by scalar (e.g. `one` or `many`), followed by selector
 //! (e.g. `by_id`).
 
+/// Create a new book, i.e. INSERT a new, non-removed book into the database,
+/// using a randomly generated ID.
+///
+/// **Cases implemented manually**:
+///
+/// - 204 No Content: Created succesfully.
+/// 
+/// - 500 Internal Server Error:
+///
+///   - Database schema in actual PostgreSQL instance doesn't match the one
+///     declared in the program.
+///
+/// **Cases provided automatically**, thanks to the ergonomics of the used
+/// libraries (_axum_, _serde_, etc.):
+///
+/// - 400 Bad Request:
+///
+///   - Request's path parameter "genre" was not one of the expected enumerable
+///     variants.
+///
+/// - 422 Unprocessable Entity:
+///
+///   - Request's JSON payload contained some unexpected field.
+///
+///   - Any of the request's JSON payload's fields had unexpected type.
+///
+///     For example, the book's page count was specified as a negative integer
+///     or as some non-numeric value, or its title was not a string etc.
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
     axum::extract::Path(genre): axum::extract::Path<api::Genre>,
