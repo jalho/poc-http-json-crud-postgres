@@ -10,6 +10,12 @@ diesel::table! {
 
         // VARCHAR(256) NOT NULL
         title -> Varchar,
+
+        // VARCHAR(256) NOT NULL
+        genre -> Varchar,
+
+        // INTEGER NOT NULL
+        page_count -> Integer,
     }
 }
 
@@ -19,33 +25,15 @@ diesel::table! {
 #[derive(diesel::Queryable, diesel::Identifiable, diesel::Selectable, diesel::Insertable, Debug, PartialEq, Clone)]
 #[diesel(table_name = books)]
 pub struct Book {
-    /*
-     * Meta data.
-     */
+    /// Metadata: `UUID PRIMARY KEY`.
     pub id: uuid::Uuid,
+    /// Metadata: `TIMESTAMP WITHOUT TIME ZONE NULL`.
     pub removed_at_utc: Option<chrono::NaiveDateTime>,
 
-    /*
-     * Data.
-     */
+    /// `VARCHAR(256) NOT NULL`
     pub title: String,
-    /*
-     * TODO: Add column genre: enum: Fantasy | ScienceFiction | Dystopian | Horror | History | ScienceAndTechnology
-     */
-    /*
-     * TODO: Add column page_count: u16
-     */
-    /*
-     * TODO: Add:
-     *       - publish_date: chrono::NaiveDate, i.e. TIMESTAMP WITHOUT TIME ZONE
-     *       - publish_date_timezone: chrono_tz::Tz, i.e. VARCHAR(128)
-     *
-     *       Also, make the publish_date* data into one structure somehow. Maybe
-     *       define a custom composite PostgreSQL type named "book_publish_date"
-     *       consisting of the date and timezone i.e. TIMESTAMP WITHOUT TIME
-     *       ZONE and VARCHAR(128) respectively, or if that's not easily
-     *       expressable in `diesel` then maybe use JSONB type or some unnamed
-     *       tuple of TIMESTAMP WITHOUT TIME ZONE and VARCHAR(128) if that's a
-     *       thing in PostgreSQL...
-     */
+    /// `VARCHAR(256) NOT NULL`
+    pub genre: String,
+    /// `INTEGER NOT NULL` (4-byte signed integer, i.e. akin to `i32`)
+    pub page_count: i32,
 }

@@ -35,7 +35,7 @@ impl Actor {
             /*
              * Create-read-update-delete (CRUD) API for books, v1.
              */
-            .route("/api/books/v1", axum::routing::post(books_v1::post_one))
+            .route("/api/books/v1/genre/{genre}", axum::routing::post(books_v1::post_one))
             .route("/api/books/v1", axum::routing::get(books_v1::get_all))
             .route("/api/books/v1/{id}", axum::routing::get(books_v1::get_one_by_id))
             .route("/api/books/v1/{id}", axum::routing::delete(books_v1::delete_one_by_id))

@@ -92,15 +92,18 @@ Entry point is at [`./src/main.rs`](./src/main.rs).
   podman exec -it poc-postgres psql -U postgres -d postgres -c '
     CREATE TABLE books (
       id             UUID PRIMARY KEY,
+      removed_at_utc TIMESTAMP WITHOUT TIME ZONE NULL,
+
       title          VARCHAR(256) NOT NULL,
-      removed_at_utc TIMESTAMP WITHOUT TIME ZONE NULL
+      genre          VARCHAR(256) NOT NULL,
+      page_count     INTEGER NOT NULL
     );'
   ```
 
 - POST a book:
 
   ```console
-  curl http://127.0.0.1:8080/api/books/v1 --json '{"id":"00000000-0000-0000-0000-000000000000","title":"Foo Bar!"}'
+  curl http://127.0.0.1:8080/api/books/v1/genre/horror --json '{"title":"Foo Bar!","page_count":123}'
   ```
 
 - GET books:

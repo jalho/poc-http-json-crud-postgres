@@ -4,11 +4,13 @@
 
 pub async fn post_one(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
+    axum::extract::Path(genre): axum::extract::Path<String>,
     axum::Json(book): axum::Json<api::BookUntagged>,
 ) -> axum::http::StatusCode {
-    let creatable: api::BookTagged = book.with_random_id();
+    let id: uuid::Uuid = uuid::Uuid::new_v4();
+    let book: api::BookTagged = book.populate(id, genre);
 
-    let _rows_affected: usize = match shared.db_client.insert_book(creatable.into()).await {
+    let _rows_affected: usize = match shared.db_client.insert_book(book.into()).await {
         Ok(n) => n,
         Err(_) => {
             return axum::http::StatusCode::INTERNAL_SERVER_ERROR;
@@ -78,38 +80,41 @@ mod api {
     /// HTTP API schema. Not to be confused with the database schema. Separation is
     /// useful to allow the two to evolve independently of each other.
     ///
-    /// Tagged means identifiers and other meta data included.
+    /// Tagged means fully qualified structure.
     #[derive(serde::Serialize, serde::Deserialize)]
     #[serde(deny_unknown_fields)]
     pub struct BookTagged {
-        /*
-         * Meta data.
-         */
+        /// Metadata.
         pub id: uuid::Uuid,
+        /// Metadata.
         pub removed_at_utc: Option<chrono::NaiveDateTime>,
 
-        /*
-         * Data.
-         */
         pub title: String,
+        pub genre: String,
+        /// None if the page count stored in the database does not fit in an
+        /// unsigned 16-bit integer.
+        pub page_count: Option<u16>,
     }
 
     /// HTTP API schema. Not to be confused with the database schema. Separation is
     /// useful to allow the two to evolve independently of each other.
     ///
-    /// Untagged means identifiers and other meta data omitted.
+    /// Untagged means some pieces of information missing.
     #[derive(serde::Serialize, serde::Deserialize)]
     #[serde(deny_unknown_fields)]
     pub struct BookUntagged {
         pub title: String,
+        pub page_count: u16,
     }
 
     impl BookUntagged {
-        pub fn with_random_id(self) -> BookTagged {
+        pub fn populate(self, id: uuid::Uuid, genre: String) -> BookTagged {
             BookTagged {
-                id: uuid::Uuid::new_v4(),
+                id,
                 removed_at_utc: None,
                 title: self.title,
+                genre,
+                page_count: self.page_count.into(),
             }
         }
     }
@@ -120,6 +125,8 @@ mod api {
                 id: db.id,
                 removed_at_utc: db.removed_at_utc,
                 title: db.title,
+                genre: db.genre,
+                page_count: db.page_count.try_into().ok(),
             }
         }
     }
@@ -130,6 +137,11 @@ mod api {
                 id: api.id,
                 removed_at_utc: api.removed_at_utc,
                 title: api.title,
+                genre: api.genre,
+                page_count: match api.page_count {
+                    Some(n) => n.into(),
+                    None => 0,
+                },
             }
         }
     }
