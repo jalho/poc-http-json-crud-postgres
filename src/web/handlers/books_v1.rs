@@ -23,7 +23,7 @@ pub async fn post_one(
 pub async fn get_all(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
 ) -> Result<axum::Json<Vec<api::BookTagged>>, axum::http::StatusCode> {
-    let all_books: Vec<crate::db::schema_v1::Book> = match shared.db_client.select_books_all().await {
+    let all_books: Vec<crate::db::schema_v1::Book> = match shared.db_client.select_books_not_removed().await {
         Ok(n) => n,
         Err(_) => {
             return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);

@@ -8,9 +8,9 @@ impl DatabaseClient {
         Self { tx_query }
     }
 
-    pub async fn select_books_all(&mut self) -> Result<Vec<crate::db::schema_v1::Book>, ()> {
+    pub async fn select_books_not_removed(&mut self) -> Result<Vec<crate::db::schema_v1::Book>, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let db_query: crate::db::Query = crate::db::Query::SelectBooksAll { respond_to: tx };
+        let db_query: crate::db::Query = crate::db::Query::SelectBooksNotRemoved { respond_to: tx };
 
         if let Err(err) = self.tx_query.send(db_query).await {
             log::error!("{err}");

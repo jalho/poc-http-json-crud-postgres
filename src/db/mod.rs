@@ -69,12 +69,16 @@ impl Actor {
                     }
                 }
 
-                Query::SelectBooksAll { respond_to } => {
+                Query::SelectBooksNotRemoved { respond_to } => {
                     use diesel::SelectableHelper;
                     let selection = schema_v1::Book::as_select();
 
                     use diesel::query_dsl::methods::SelectDsl;
                     let query = books.select(selection);
+
+                    use diesel::ExpressionMethods;
+                    use diesel::query_dsl::methods::FilterDsl;
+                    let query = query.filter(schema_v1::books::removed_at_utc.is_null());
 
                     let query_dbg: String = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
                     log::debug!("{query_dbg}");
@@ -143,7 +147,7 @@ pub enum Query {
         respond_to: tokio::sync::oneshot::Sender<Result<usize, diesel::result::Error>>,
         book: schema_v1::Book,
     },
-    SelectBooksAll {
+    SelectBooksNotRemoved {
         respond_to: tokio::sync::oneshot::Sender<Result<Vec<schema_v1::Book>, diesel::result::Error>>,
     },
     SelectBookById {
