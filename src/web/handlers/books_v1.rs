@@ -46,6 +46,11 @@ pub async fn get_one_by_id(
         }
     };
 
+    if let Some(removed_at_utc) = book.removed_at_utc {
+        log::error!("Forbidden: Cannot GET: Book {book_id} was removed at {removed_at_utc} UTC");
+        return Err(axum::http::StatusCode::FORBIDDEN);
+    }
+
     Ok(axum::Json(book.into()))
 }
 
@@ -61,7 +66,7 @@ pub async fn delete_one_by_id(
     };
 
     if let Some(removed_at_utc) = existing.removed_at_utc {
-        log::error!("Bad request: Cannot remove book {book_id}: Already removed at {removed_at_utc} UTC");
+        log::error!("Bad request: Cannot DELETE: Book {book_id} already removed at {removed_at_utc} UTC");
         return axum::http::StatusCode::BAD_REQUEST;
     }
 
