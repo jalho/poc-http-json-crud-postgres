@@ -47,8 +47,19 @@ pub async fn delete_one_by_id(
     axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
     axum::extract::Path(book_id): axum::extract::Path<uuid::Uuid>,
 ) -> axum::http::StatusCode {
-    let removal_instant: chrono::DateTime<chrono::Utc> = chrono::Utc::now();
+    let existing: crate::db::schema::Book = match shared.db_client.select_book_by_id(book_id).await {
+        Ok(n) => n,
+        Err(_) => {
+            return axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+        }
+    };
 
+    if let Some(removed_at_utc) = existing.removed_at_utc {
+        log::error!("Bad request: Cannot remove book {book_id}: Already removed at {removed_at_utc} UTC");
+        return axum::http::StatusCode::BAD_REQUEST;
+    }
+
+    let removal_instant: chrono::DateTime<chrono::Utc> = chrono::Utc::now();
     let _rows_affected: usize = match shared.db_client.update_book_set_removed(book_id, removal_instant).await {
         Ok(n) => n,
         Err(_) => {
