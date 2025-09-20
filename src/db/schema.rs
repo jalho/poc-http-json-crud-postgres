@@ -2,6 +2,7 @@ diesel::table! {
     books (id) {
         id -> Uuid,
         title -> Varchar,
+        removed_at_utc -> Nullable<Timestamp>,
     }
 }
 
@@ -20,4 +21,5 @@ diesel::table! {
 pub struct Book {
     pub id: uuid::Uuid,
     pub title: String,
+    pub removed_at_utc: Option<chrono::NaiveDateTime>,
 }

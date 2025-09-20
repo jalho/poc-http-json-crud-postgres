@@ -162,6 +162,7 @@ checksum = "145052bdd345b87320e369255277e3fb5152762ad123a901ef5c262dd38fe8d2"
 dependencies = [
  "iana-time-zone",
  "num-traits",
+ "serde",
  "windows-link",
 ]
 
@@ -235,6 +236,7 @@ checksum = "cb300b92bb5f1a44ce412aeb36a7387931bf7a5238b4570bc1d0b9c8a78fde4e"
 dependencies = [
  "bitflags",
  "byteorder",
+ "chrono",
  "diesel_derives",
  "downcast-rs",
  "itoa",
@@ -647,6 +649,7 @@ name = "poc-http-json-crud-postgres"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "chrono",
  "diesel",
  "log",
  "log4rs",

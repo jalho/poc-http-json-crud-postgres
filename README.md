@@ -91,8 +91,9 @@ Entry point is at [`./src/main.rs`](./src/main.rs).
   ```console
   podman exec -it poc-postgres psql -U postgres -d postgres -c '
     CREATE TABLE books (
-      id    UUID PRIMARY KEY,
-      title VARCHAR NOT NULL
+      id             UUID PRIMARY KEY,
+      title          VARCHAR(256) NOT NULL,
+      removed_at_utc TIMESTAMP WITHOUT TIME ZONE NULL
     );'
   ```
 
