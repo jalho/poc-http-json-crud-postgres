@@ -7,6 +7,38 @@ Proof-of-concept implementation demonstrating:
 - Using _actor pattern_ in _tokio_ ecosystem (inspired by Alice Ryhl: _Actors
   with Tokio_, RustLab Conference 2022)
 
+I wrote this POC to motivate why someone might want to prefer writing an HTTP
+JSON CRUD API using Rust and its libraries _axum_ and _serde_, instead of using
+TypeScript in Node.js without any libraries. Having to choose between these two
+alternatives is obviously quite an arbitrary restriction, and I'm sure there
+exists somewhat equivalent libraries in the TypeScript and/or Node.js world
+too. Anyway, let's suppose you do have to deal with HTTP JSON CRUD APIs using
+TypeScript in Node.js without any libraries and you happen to like Rust and
+you are looking for a better way of doing things. When that's the case, please
+compare the equivalent implementations in Rust and TypeScript:
+
+- Rust with _axum_ and _serde_, etc.: See function `post_one` in
+  [`./src/web/handlers/books_v1.rs`](./src/web/handlers/books_v1.rs):
+
+  ```rust
+  pub async fn post_one(
+      axum::extract::State(mut shared): axum::extract::State<crate::web::Shared>,
+      axum::extract::Path(genre): axum::extract::Path<api::Genre>,
+      axum::Json(book): axum::Json<api::BookUnpopulated>,
+  ) -> axum::http::StatusCode {
+    // ...
+  }
+  ```
+
+- TypeScript in Node.js without any libraries: See function `post_one` in
+  [`./nodejs-equivalent/main.mts`](./nodejs-equivalent/main.mts):
+
+  ```typescript
+  async function post_one(inbound: libhttp.IncomingMessage, outbound: libhttp.ServerResponse) {
+    // ...
+  }
+  ```
+
 ### Actor pattern
 
 Actor pattern is a useful idea when we want to clearly define which component
