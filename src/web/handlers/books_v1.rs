@@ -17,10 +17,18 @@
 /// **Cases provided automatically**, thanks to the ergonomics of the used
 /// libraries (_axum_, _serde_, etc.):
 ///
+/// - 415 Unsupported Media Type:
+///
+///   - Request didn't specify header `Content-Type: application/json`
+/// 
 /// - 400 Bad Request:
 ///
 ///   - Request's path parameter "genre" was not one of the expected enumerable
 ///     variants.
+///
+///   - Request didn't have a body payload.
+///
+///   - Request's body payload was not deserializable as JSON.
 ///
 /// - 422 Unprocessable Entity:
 ///
