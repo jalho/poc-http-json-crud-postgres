@@ -33,14 +33,14 @@ impl DatabaseClient {
             }
         };
 
-        return Ok(books);
+        Ok(books)
     }
 
     pub async fn select_book_by_id(&mut self, book_id: uuid::Uuid) -> Result<crate::db::schema_v1::Book, ()> {
         let (tx, rx) = tokio::sync::oneshot::channel();
         let db_query: crate::db::Query = crate::db::Query::SelectBookById {
             respond_to: tx,
-            book_id: book_id,
+            book_id,
         };
 
         if let Err(err) = self.tx_query.send(db_query).await {
@@ -64,7 +64,7 @@ impl DatabaseClient {
             }
         };
 
-        return Ok(book);
+        Ok(book)
     }
 
     pub async fn insert_book(&mut self, book: crate::db::schema_v1::Book) -> Result<usize, ()> {
@@ -92,7 +92,7 @@ impl DatabaseClient {
             }
         };
 
-        return Ok(rows_affected);
+        Ok(rows_affected)
     }
 
     pub async fn update_book_set_removed(
@@ -128,6 +128,6 @@ impl DatabaseClient {
             }
         };
 
-        return Ok(rows_affected);
+        Ok(rows_affected)
     }
 }

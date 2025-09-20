@@ -13,7 +13,7 @@ pub async fn post_one(
         }
     };
 
-    return axum::http::StatusCode::NO_CONTENT;
+    axum::http::StatusCode::NO_CONTENT
 }
 
 pub async fn get_all(
@@ -69,7 +69,7 @@ pub async fn delete_one_by_id(
         }
     };
 
-    return axum::http::StatusCode::NO_CONTENT;
+    axum::http::StatusCode::NO_CONTENT
 }
 
 mod api {
@@ -92,12 +92,12 @@ mod api {
         }
     }
 
-    impl Into<crate::db::schema_v1::Book> for Book {
-        fn into(self) -> crate::db::schema_v1::Book {
+    impl From<Book> for crate::db::schema_v1::Book {
+        fn from(value: Book) -> Self {
             crate::db::schema_v1::Book {
-                id: self.id,
-                removed_at_utc: self.removed_at_utc,
-                title: self.title,
+                id: value.id,
+                removed_at_utc: value.removed_at_utc,
+                title: value.title,
             }
         }
     }
