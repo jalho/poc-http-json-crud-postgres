@@ -88,7 +88,7 @@ impl DatabaseClient {
             }
         };
 
-        let foo: usize = match db_actor_response {
+        let rows_affected: usize = match db_actor_response {
             Ok(n) => n,
             Err(err) => {
                 log::error!("{err}");
@@ -96,16 +96,16 @@ impl DatabaseClient {
             }
         };
 
-        return Ok(foo);
+        return Ok(rows_affected);
     }
 }
 
 #[derive(Clone)]
-struct State {
+struct Shared {
     db_client: DatabaseClient,
 }
 
-impl State {
+impl Shared {
     pub fn init(tx_query: tokio::sync::mpsc::Sender<crate::db::Query>) -> Self {
         Self {
             db_client: DatabaseClient::new(tx_query),
@@ -126,7 +126,7 @@ impl Actor {
         listen_address: &str,
         tx_query: tokio::sync::mpsc::Sender<crate::db::Query>,
     ) -> Self {
-        let state: State = State::init(tx_query);
+        let state: Shared = Shared::init(tx_query);
 
         let router: axum::Router = axum::Router::new()
             .route("/api/books/v1", axum::routing::post(books_v1::post_one))
