@@ -1,3 +1,5 @@
+//! PostgreSQL schema.
+
 diesel::table! {
     books (id) {
         // UUID PRIMARY KEY
@@ -27,6 +29,9 @@ pub struct Book {
      * Data.
      */
     pub title: String,
+    /*
+     * TODO: Add column genre: enum: Fantasy | ScienceFiction | Dystopian | Horror | History | ScienceAndTechnology
+     */
     /*
      * TODO: Add column page_count: u16
      */
