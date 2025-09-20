@@ -50,7 +50,7 @@ impl Actor {
             let query_received: Query = match query_recv.recv().await {
                 Some(n) => n,
                 None => {
-                    return ;
+                    return;
                 }
             };
 
