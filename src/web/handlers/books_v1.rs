@@ -1,18 +1,15 @@
 pub async fn get_many(
-    state: axum::extract::State<std::sync::Arc<crate::web::State>>,
+    state: axum::extract::State<crate::web::State>,
 ) -> Result<axum::Json<Vec<crate::db::schema::Book>>, axum::http::StatusCode> {
-    let state: std::sync::Arc<crate::web::State> = state.0;
+    let state: crate::web::State = state.0;
 
     let (db_tx, db_rx) = tokio::sync::oneshot::channel();
     let db_query: crate::db::Query = crate::db::Query::SelectManyBooks { respond_to: db_tx };
 
-    {
-        let lock = state.db_client_shared.lock().await;
-        if let Err(err) = lock.send(db_query).await {
-            log::error!("{err}");
-            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-        };
-    }
+    if let Err(err) = state.db_client.send(db_query).await {
+        log::error!("{err}");
+        return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+    };
 
     let db_actor_response = match db_rx.await {
         Ok(n) => n,
@@ -34,10 +31,10 @@ pub async fn get_many(
 }
 
 pub async fn get_one_by_id(
-    state: axum::extract::State<std::sync::Arc<crate::web::State>>,
+    state: axum::extract::State<crate::web::State>,
     book_id: axum::extract::Path<uuid::Uuid>,
 ) -> Result<axum::Json<crate::db::schema::Book>, axum::http::StatusCode> {
-    let state: std::sync::Arc<crate::web::State> = state.0;
+    let state: crate::web::State = state.0;
     let book_id: uuid::Uuid = book_id.0;
 
     let (db_tx, db_rx) = tokio::sync::oneshot::channel();
@@ -46,13 +43,10 @@ pub async fn get_one_by_id(
         book_id,
     };
 
-    {
-        let lock = state.db_client_shared.lock().await;
-        if let Err(err) = lock.send(db_query).await {
-            log::error!("{err}");
-            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-        };
-    }
+    if let Err(err) = state.db_client.send(db_query).await {
+        log::error!("{err}");
+        return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+    };
 
     let db_actor_response = match db_rx.await {
         Ok(n) => n,
@@ -74,10 +68,10 @@ pub async fn get_one_by_id(
 }
 
 pub async fn post_one(
-    state: axum::extract::State<std::sync::Arc<crate::web::State>>,
+    state: axum::extract::State<crate::web::State>,
     book: axum::Json<crate::db::schema::Book>,
 ) -> Result<(), axum::http::StatusCode> {
-    let state: std::sync::Arc<crate::web::State> = state.0;
+    let state: crate::web::State = state.0;
     let book: crate::db::schema::Book = book.0;
 
     let (db_tx, db_rx) = tokio::sync::oneshot::channel();
@@ -86,13 +80,10 @@ pub async fn post_one(
         book,
     };
 
-    {
-        let lock = state.db_client_shared.lock().await;
-        if let Err(err) = lock.send(db_query).await {
-            log::error!("{err}");
-            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-        };
-    }
+    if let Err(err) = state.db_client.send(db_query).await {
+        log::error!("{err}");
+        return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+    };
 
     let db_actor_response = match db_rx.await {
         Ok(n) => n,

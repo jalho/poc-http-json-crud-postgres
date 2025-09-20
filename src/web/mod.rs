@@ -2,15 +2,14 @@ use crate::web::handlers::books_v1;
 
 mod handlers;
 
+#[derive(Clone)]
 struct State {
-    db_client_shared: tokio::sync::Mutex<tokio::sync::mpsc::Sender<crate::db::Query>>,
+    db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
 }
 
 impl State {
-    pub fn init(db_client_shared: tokio::sync::mpsc::Sender<crate::db::Query>) -> std::sync::Arc<Self> {
-        std::sync::Arc::new(Self {
-            db_client_shared: tokio::sync::Mutex::new(db_client_shared),
-        })
+    pub fn init(db_client: tokio::sync::mpsc::Sender<crate::db::Query>) -> Self {
+        Self { db_client }
     }
 }
 
@@ -27,7 +26,7 @@ impl Actor {
         listen_address: &str,
         db_client: tokio::sync::mpsc::Sender<crate::db::Query>,
     ) -> Self {
-        let state: std::sync::Arc<State> = State::init(db_client);
+        let state: State = State::init(db_client);
 
         let router: axum::Router = axum::Router::new()
             .route("/api/books/v1", axum::routing::post(books_v1::post_one))
